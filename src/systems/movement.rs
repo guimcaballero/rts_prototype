@@ -1,0 +1,116 @@
+use bevy::{math::Vec3, prelude::*, render::camera::Camera};
+use bevy_mod_picking::*;
+
+const SPEED: f32 = 3.0;
+
+// TODO Scratch all this an make a child of the cubes
+// Gonna need to see how to get both the parent and the child in a system, to be able to move the cube towards the target
+
+pub struct TargetPosition {
+    pub pos: Option<Vec3>,
+    pub entity: Entity,
+}
+impl TargetPosition {
+    #[inline(always)]
+    pub fn new(entity: Entity) -> Self {
+        // TODO Should this be an &Entity?
+        Self { pos: None, entity }
+    }
+
+    pub fn update_to_vec(&mut self, vec: &Vec3) {
+        if let Some(pos) = self.pos.as_mut() {
+            pos.set_x(vec.x());
+            pos.set_y(vec.y());
+            pos.set_z(vec.z());
+        } else {
+            self.pos = Some(vec.clone());
+        }
+    }
+}
+
+// Moves towards the target while it's not selected
+pub fn move_to_target(mut query: Query<(&mut TargetPosition, &mut Translation)>) {
+    for (mut target, mut translation) in &mut query.iter() {
+        if let Some(target_pos) = target.pos {
+            let mut direction = target_pos - translation.0;
+            direction.set_y(0.0);
+            if direction.length() > 0.3 {
+                let direction = direction.normalize() * SPEED / 30.0;
+                translation.0 += direction;
+            } else {
+                println!("reached destination");
+                target.pos = None;
+            }
+        }
+    }
+}
+
+pub fn set_target_for_selected(
+    pick_state: Res<PickState>,
+    mouse_button_inputs: Res<Input<MouseButton>>,
+    mut query: Query<(&SelectablePickMesh, &mut TargetPosition)>,
+    mut camera_query: Query<(&Transform, &Camera)>,
+) {
+    if mouse_button_inputs.just_pressed(MouseButton::Right) {
+        // Get the camera
+        let mut view_matrix = Mat4::zero();
+        let mut projection_matrix = Mat4::zero();
+        for (transform, camera) in &mut camera_query.iter() {
+            view_matrix = transform.value.inverse();
+            projection_matrix = camera.projection_matrix;
+        }
+
+        // Get the world position
+        if let Some(top_pick) = pick_state.top() {
+            let pos = top_pick.get_pick_world_pos(projection_matrix, view_matrix);
+
+            for (selectable, mut target) in &mut query.iter() {
+                if selectable.selected() {
+                    target.update_to_vec(&pos);
+                }
+            }
+        } else {
+            println!("can't find position");
+        }
+    }
+}
+
+pub fn wasd_movement(
+    time: Res<Time>,
+    keyboard_input: Res<Input<KeyCode>>,
+    mut query_camera: Query<(&Camera, &mut Translation, &mut Rotation)>,
+) {
+    for (_, mut translation, rotation) in &mut query_camera.iter() {
+        if keyboard_input.pressed(KeyCode::W) {
+            translation.0 +=
+                rotation.0.mul_vec3(Vec3::new(0.0, 1.0, 0.0)) * time.delta_seconds * SPEED;
+        }
+        if keyboard_input.pressed(KeyCode::A) {
+            translation.0 +=
+                rotation.0.mul_vec3(Vec3::new(-1.0, 0.0, 0.0)) * time.delta_seconds * SPEED;
+        }
+        if keyboard_input.pressed(KeyCode::S) {
+            translation.0 +=
+                rotation.0.mul_vec3(Vec3::new(0.0, -1.0, 0.0)) * time.delta_seconds * SPEED;
+        }
+        if keyboard_input.pressed(KeyCode::D) {
+            translation.0 +=
+                rotation.0.mul_vec3(Vec3::new(1.0, 0.0, 0.0)) * time.delta_seconds * SPEED;
+        }
+        if keyboard_input.pressed(KeyCode::Q) {
+            translation.0 +=
+                rotation.0.mul_vec3(Vec3::new(0.0, 0.0, -1.0)) * time.delta_seconds * SPEED;
+        }
+        if keyboard_input.pressed(KeyCode::E) {
+            translation.0 +=
+                rotation.0.mul_vec3(Vec3::new(0.0, 0.0, 1.0)) * time.delta_seconds * SPEED;
+        }
+
+        // if keyboard_input.pressed(KeyCode::Q) {
+        //     rotation.0 *= Quat::from_rotation_ypr(1.0 * time.delta_seconds * speed, 0.0, 0.0);
+        // }
+        // if keyboard_input.pressed(KeyCode::E) {
+        //     rotation.0 *= Quat::from_rotation_ypr(-1.0 * time.delta_seconds * speed, 0.0, 0.0);
+        // }
+    }
+}
