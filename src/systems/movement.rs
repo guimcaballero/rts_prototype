@@ -1,7 +1,8 @@
 use bevy::{math::Vec3, prelude::*, render::camera::Camera};
 use bevy_mod_picking::*;
 
-const SPEED: f32 = 3.0;
+const SPEED: f32 = 0.1;
+const CAMERA_SPEED: f32 = 3.0;
 
 // TODO Scratch all this an make a child of the cubes
 // Gonna need to see how to get both the parent and the child in a system, to be able to move the cube towards the target
@@ -35,7 +36,7 @@ pub fn move_to_target(mut query: Query<(&mut TargetPosition, &mut Translation)>)
             let mut direction = target_pos - translation.0;
             direction.set_y(0.0);
             if direction.length() > 0.3 {
-                let direction = direction.normalize() * SPEED / 30.0;
+                let direction = direction.normalize() * SPEED;
                 translation.0 += direction;
             } else {
                 println!("reached destination");
@@ -83,27 +84,27 @@ pub fn wasd_movement(
     for (_, mut translation, rotation) in &mut query_camera.iter() {
         if keyboard_input.pressed(KeyCode::W) {
             translation.0 +=
-                rotation.0.mul_vec3(Vec3::new(0.0, 1.0, 0.0)) * time.delta_seconds * SPEED;
+                rotation.0.mul_vec3(Vec3::new(0.0, 1.0, 0.0)) * time.delta_seconds * CAMERA_SPEED;
         }
         if keyboard_input.pressed(KeyCode::A) {
             translation.0 +=
-                rotation.0.mul_vec3(Vec3::new(-1.0, 0.0, 0.0)) * time.delta_seconds * SPEED;
+                rotation.0.mul_vec3(Vec3::new(-1.0, 0.0, 0.0)) * time.delta_seconds * CAMERA_SPEED;
         }
         if keyboard_input.pressed(KeyCode::S) {
             translation.0 +=
-                rotation.0.mul_vec3(Vec3::new(0.0, -1.0, 0.0)) * time.delta_seconds * SPEED;
+                rotation.0.mul_vec3(Vec3::new(0.0, -1.0, 0.0)) * time.delta_seconds * CAMERA_SPEED;
         }
         if keyboard_input.pressed(KeyCode::D) {
             translation.0 +=
-                rotation.0.mul_vec3(Vec3::new(1.0, 0.0, 0.0)) * time.delta_seconds * SPEED;
+                rotation.0.mul_vec3(Vec3::new(1.0, 0.0, 0.0)) * time.delta_seconds * CAMERA_SPEED;
         }
         if keyboard_input.pressed(KeyCode::Q) {
             translation.0 +=
-                rotation.0.mul_vec3(Vec3::new(0.0, 0.0, -1.0)) * time.delta_seconds * SPEED;
+                rotation.0.mul_vec3(Vec3::new(0.0, 0.0, -1.0)) * time.delta_seconds * CAMERA_SPEED;
         }
         if keyboard_input.pressed(KeyCode::E) {
             translation.0 +=
-                rotation.0.mul_vec3(Vec3::new(0.0, 0.0, 1.0)) * time.delta_seconds * SPEED;
+                rotation.0.mul_vec3(Vec3::new(0.0, 0.0, 1.0)) * time.delta_seconds * CAMERA_SPEED;
         }
 
         // if keyboard_input.pressed(KeyCode::Q) {
