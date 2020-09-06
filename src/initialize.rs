@@ -51,8 +51,8 @@ pub fn setup(
         .spawn_as_entity(
             camera_entity,
             Camera3dComponents {
-                translation: Translation::new(0.0, 20.0, 0.0),
-                rotation: Rotation(Quat::from_xyzw(-0.5, -0.5, -0.5, 0.5).normalize()),
+                translation: Translation::new(-10.0, 30.0, 0.0),
+                rotation: Rotation(Quat::from_xyzw(-0.3, -0.5, -0.3, 0.5).normalize()),
                 ..Default::default()
             },
         );
