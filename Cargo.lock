@@ -470,15 +470,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "bevy_test"
-version = "0.1.0"
-dependencies = [
- "bevy",
- "bevy_contrib_colors",
- "bevy_mod_picking",
-]
-
-[[package]]
 name = "bevy_text"
 version = "0.1.3"
 source = "git+https://github.com/bevyengine/bevy#9d0abeb0144bcb40cc7d9ebc750a807000b6e0ab"
@@ -2227,6 +2218,15 @@ dependencies = [
  "base64",
  "bitflags",
  "serde",
+]
+
+[[package]]
+name = "rts_prototype"
+version = "0.1.0"
+dependencies = [
+ "bevy",
+ "bevy_contrib_colors",
+ "bevy_mod_picking",
 ]
 
 [[package]]

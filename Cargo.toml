@@ -1,5 +1,5 @@
 [package]
-name = "bevy_test"
+name = "rts_prototype"
 version = "0.1.0"
 authors = ["guimcaballero <guim@caballerocoll.com>"]
 edition = "2018"
