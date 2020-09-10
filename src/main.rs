@@ -20,5 +20,6 @@ fn main() {
         .add_system(movement::wasd_movement.system())
         .add_system(movement::move_to_target.system())
         .add_system(movement::set_target_for_selected.system())
+        .add_system(movement::show_target_indicator.system())
         .run();
 }

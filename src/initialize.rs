@@ -1,4 +1,4 @@
-use crate::systems::movement::TargetPosition;
+use crate::systems::movement::{TargetIndicator, TargetPosition};
 use bevy::{math::Quat, prelude::*};
 use bevy_contrib_colors::Tailwind;
 use bevy_mod_picking::*;
@@ -40,6 +40,17 @@ pub fn setup(
         .with(PickableMesh::new(camera_entity))
         .with(HighlightablePickMesh::new())
         .with(SelectablePickMesh::new())
+        // Target sphere
+        .spawn(PbrComponents {
+            mesh: meshes.add(Mesh::from(shape::Icosphere {
+                subdivisions: 4,
+                radius: 0.5,
+            })),
+            material: materials.add(Tailwind::GREEN400.into()),
+            translation: Translation::new(5.0, 1.0, 3.0),
+            ..Default::default()
+        })
+        .with(TargetIndicator)
         // light
         .spawn(LightComponents {
             translation: Translation::new(4.0, 8.0, 4.0),

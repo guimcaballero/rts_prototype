@@ -24,6 +24,34 @@ impl TargetPosition {
     }
 }
 
+pub struct TargetIndicator;
+pub fn show_target_indicator(
+    mut indicator_query: Query<(&TargetIndicator, &mut Translation, &mut Draw)>,
+    mut selected_query: Query<(&SelectablePickMesh, &TargetPosition)>,
+) {
+    let mut selections_with_target_exist = false;
+    for (selectable, target) in &mut selected_query.iter() {
+        // We only want selected items
+        if !selectable.selected() {
+            continue;
+        }
+
+        // Set the Indicator to the Target position
+        if let Some(target_pos) = target.pos {
+            selections_with_target_exist = true;
+
+            for (_, mut translation, _) in &mut indicator_query.iter() {
+                translation.0 = target_pos;
+            }
+        }
+    }
+
+    // Toggle drawability according to if there is anything selected
+    for (_, _, mut draw) in &mut indicator_query.iter() {
+        draw.is_visible = selections_with_target_exist;
+    }
+}
+
 // Moves towards the target while it's not selected
 pub fn move_to_target(mut query: Query<(&mut TargetPosition, &mut Translation)>) {
     for (mut target, mut translation) in &mut query.iter() {
