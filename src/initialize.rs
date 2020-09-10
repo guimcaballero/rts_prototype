@@ -9,8 +9,6 @@ pub fn setup(
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
     let camera_entity = Entity::new();
-    let cube1_entity = Entity::new();
-    let cube2_entity = Entity::new();
 
     // add entities to the world
     commands
@@ -28,7 +26,7 @@ pub fn setup(
             translation: Translation::new(0.0, 1.0, 0.0),
             ..Default::default()
         })
-        .with(TargetPosition::new(cube1_entity))
+        .with(TargetPosition::new())
         .with(PickableMesh::new(camera_entity))
         .with(HighlightablePickMesh::new())
         .with(SelectablePickMesh::new())
@@ -38,7 +36,7 @@ pub fn setup(
             translation: Translation::new(5.0, 1.0, 3.0),
             ..Default::default()
         })
-        .with(TargetPosition::new(cube2_entity))
+        .with(TargetPosition::new())
         .with(PickableMesh::new(camera_entity))
         .with(HighlightablePickMesh::new())
         .with(SelectablePickMesh::new())
@@ -51,7 +49,7 @@ pub fn setup(
         .spawn_as_entity(
             camera_entity,
             Camera3dComponents {
-                translation: Translation::new(-10.0, 30.0, 0.0),
+                translation: Translation::new(-25.0, 40.0, 0.0),
                 rotation: Rotation(Quat::from_xyzw(-0.3, -0.5, -0.3, 0.5).normalize()),
                 ..Default::default()
             },
