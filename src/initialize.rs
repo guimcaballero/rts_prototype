@@ -3,6 +3,24 @@ use bevy::{math::Quat, prelude::*};
 use bevy_contrib_colors::Tailwind;
 use bevy_mod_picking::*;
 
+#[derive(Bundle)]
+struct UnitBundle {
+    target_position: TargetPosition,
+    pickable_mesh: PickableMesh,
+    highlightable_pick_mesh: HighlightablePickMesh,
+    selectable_pick_mesh: SelectablePickMesh,
+}
+impl UnitBundle {
+    pub fn new(camera_entity: Entity) -> Self {
+        Self {
+            target_position: TargetPosition::new(),
+            pickable_mesh: PickableMesh::new(camera_entity),
+            highlightable_pick_mesh: HighlightablePickMesh::new(),
+            selectable_pick_mesh: SelectablePickMesh::new(),
+        }
+    }
+}
+
 pub fn setup(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
@@ -26,20 +44,14 @@ pub fn setup(
             translation: Translation::new(0.0, 1.0, 0.0),
             ..Default::default()
         })
-        .with(TargetPosition::new())
-        .with(PickableMesh::new(camera_entity))
-        .with(HighlightablePickMesh::new())
-        .with(SelectablePickMesh::new())
+        .with_bundle(UnitBundle::new(camera_entity))
         .spawn(PbrComponents {
             mesh: meshes.add(Mesh::from(shape::Cube { size: 1.0 })),
             material: materials.add(Tailwind::RED400.into()),
             translation: Translation::new(5.0, 1.0, 3.0),
             ..Default::default()
         })
-        .with(TargetPosition::new())
-        .with(PickableMesh::new(camera_entity))
-        .with(HighlightablePickMesh::new())
-        .with(SelectablePickMesh::new())
+        .with_bundle(UnitBundle::new(camera_entity))
         // Target sphere
         .spawn(PbrComponents {
             mesh: meshes.add(Mesh::from(shape::Icosphere {
