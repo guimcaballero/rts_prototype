@@ -1,3 +1,4 @@
+use crate::systems::unit::{TargetPosition, Unit};
 use bevy::{prelude::*, render::camera::Camera};
 
 pub struct CanHaveCamera {
@@ -40,9 +41,21 @@ fn update_camera_position(
     }
 }
 
+fn reset_unit_target_if_it_has_camera(
+    mut query: Query<(&CanHaveCamera, &mut TargetPosition, &mut Unit)>,
+) {
+    for (can_have_camera, mut target, mut unit) in &mut query.iter() {
+        if let Some(_) = can_have_camera.camera_entity {
+            target.pos = None;
+            unit.selected = false;
+        }
+    }
+}
+
 pub struct CameraPlugin;
 impl Plugin for CameraPlugin {
     fn build(&self, app: &mut AppBuilder) {
-        app.add_system(update_camera_position.system());
+        app.add_system(update_camera_position.system())
+            .add_system(reset_unit_target_if_it_has_camera.system());
     }
 }

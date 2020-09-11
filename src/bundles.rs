@@ -17,7 +17,7 @@ pub struct UnitBundle {
 impl UnitBundle {
     pub fn new(camera_entity: Entity) -> Self {
         Self {
-            unit: Unit,
+            unit: Unit::new(),
             target_position: TargetPosition::new(),
             pickable_mesh: PickableMesh::new(camera_entity),
             highlightable_pick_mesh: HighlightablePickMesh::new(),
@@ -27,7 +27,7 @@ impl UnitBundle {
     }
     pub fn new_with_has_camera(camera_entity: Entity) -> Self {
         Self {
-            unit: Unit,
+            unit: Unit::new(),
             target_position: TargetPosition::new(),
             pickable_mesh: PickableMesh::new(camera_entity),
             highlightable_pick_mesh: HighlightablePickMesh::new(),

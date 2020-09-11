@@ -3,7 +3,14 @@ use bevy_mod_picking::*;
 
 const SPEED: f32 = 0.1;
 
-pub struct Unit;
+pub struct Unit {
+    pub selected: bool,
+}
+impl Unit {
+    pub fn new() -> Self {
+        Self { selected: false }
+    }
+}
 
 pub struct TargetPosition {
     pub pos: Option<Vec3>,
