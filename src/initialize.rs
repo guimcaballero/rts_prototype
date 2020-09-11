@@ -1,4 +1,7 @@
-use crate::systems::movement::{TargetIndicator, TargetPosition};
+use crate::systems::{
+    drone,
+    movement::{TargetIndicator, TargetPosition},
+};
 use bevy::{math::Quat, prelude::*};
 use bevy_contrib_colors::Tailwind;
 use bevy_mod_picking::*;
@@ -76,5 +79,6 @@ pub fn setup(
                 rotation: Rotation(Quat::from_xyzw(-0.3, -0.5, -0.3, 0.5).normalize()),
                 ..Default::default()
             },
-        );
+        )
+        .with(drone::Drone::default());
 }
