@@ -6,7 +6,7 @@ edition = "2018"
 
 [dependencies]
 bevy = { git = "https://github.com/bevyengine/bevy" }
-bevy_mod_picking = { git = "https://github.com/aevyrie/bevy_mod_picking", branch = "master" }
+bevy_mod_picking = { git = "https://github.com/guimcaballero/bevy_mod_picking", branch = "add-entity-to-pickintersection" }
 bevy_contrib_colors = { git = "https://github.com/guimcaballero/bevy_contrib_colors", branch = "master" }
 
 [patch.crates-io]

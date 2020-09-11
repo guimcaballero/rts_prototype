@@ -1,5 +1,5 @@
 use bevy::{math::Vec3, prelude::*, render::camera::Camera};
-use bevy_mod_picking::*;
+use bevy_mod_picking::PickState;
 
 const SPEED: f32 = 0.1;
 
@@ -35,12 +35,12 @@ impl TargetPosition {
 pub struct TargetIndicator;
 pub fn show_target_indicator(
     mut indicator_query: Query<(&TargetIndicator, &mut Translation, &mut Draw)>,
-    mut selected_query: Query<(&Unit, &SelectablePickMesh, &TargetPosition)>,
+    mut unit_query: Query<(&Unit, &TargetPosition)>,
 ) {
     let mut selections_with_target_exist = false;
-    for (_, selectable, target) in &mut selected_query.iter() {
+    for (unit, target) in &mut unit_query.iter() {
         // We only want selected items
-        if !selectable.selected() {
+        if !unit.selected {
             continue;
         }
 
@@ -80,7 +80,7 @@ pub fn move_to_target(mut query: Query<(&Unit, &mut TargetPosition, &mut Transla
 pub fn set_target_for_selected(
     pick_state: Res<PickState>,
     mouse_button_inputs: Res<Input<MouseButton>>,
-    mut query: Query<(&Unit, &SelectablePickMesh, &mut TargetPosition)>,
+    mut query: Query<(&Unit, &mut TargetPosition)>,
     mut camera_query: Query<(&Transform, &Camera)>,
 ) {
     if mouse_button_inputs.just_pressed(MouseButton::Right) {
@@ -96,8 +96,8 @@ pub fn set_target_for_selected(
         if let Some(top_pick) = pick_state.top() {
             let pos = top_pick.get_pick_coord_world(projection_matrix, view_matrix);
 
-            for (_, selectable, mut target) in &mut query.iter() {
-                if selectable.selected() {
+            for (unit, mut target) in &mut query.iter() {
+                if unit.selected {
                     target.update_to_vec(&pos);
                 }
             }
