@@ -28,10 +28,10 @@ impl TargetPosition {
 pub struct TargetIndicator;
 pub fn show_target_indicator(
     mut indicator_query: Query<(&TargetIndicator, &mut Translation, &mut Draw)>,
-    mut selected_query: Query<(&SelectablePickMesh, &TargetPosition)>,
+    mut selected_query: Query<(&Unit, &SelectablePickMesh, &TargetPosition)>,
 ) {
     let mut selections_with_target_exist = false;
-    for (selectable, target) in &mut selected_query.iter() {
+    for (_, selectable, target) in &mut selected_query.iter() {
         // We only want selected items
         if !selectable.selected() {
             continue;
@@ -54,8 +54,8 @@ pub fn show_target_indicator(
 }
 
 // Moves towards the target while it's not selected
-pub fn move_to_target(mut query: Query<(&mut TargetPosition, &mut Translation)>) {
-    for (mut target, mut translation) in &mut query.iter() {
+pub fn move_to_target(mut query: Query<(&Unit, &mut TargetPosition, &mut Translation)>) {
+    for (_, mut target, mut translation) in &mut query.iter() {
         if let Some(target_pos) = target.pos {
             let mut direction = target_pos - translation.0;
             direction.set_y(0.0);
@@ -73,7 +73,7 @@ pub fn move_to_target(mut query: Query<(&mut TargetPosition, &mut Translation)>)
 pub fn set_target_for_selected(
     pick_state: Res<PickState>,
     mouse_button_inputs: Res<Input<MouseButton>>,
-    mut query: Query<(&SelectablePickMesh, &mut TargetPosition)>,
+    mut query: Query<(&Unit, &SelectablePickMesh, &mut TargetPosition)>,
     mut camera_query: Query<(&Transform, &Camera)>,
 ) {
     if mouse_button_inputs.just_pressed(MouseButton::Right) {
@@ -89,7 +89,7 @@ pub fn set_target_for_selected(
         if let Some(top_pick) = pick_state.top() {
             let pos = top_pick.get_pick_coord_world(projection_matrix, view_matrix);
 
-            for (selectable, mut target) in &mut query.iter() {
+            for (_, selectable, mut target) in &mut query.iter() {
                 if selectable.selected() {
                     target.update_to_vec(&pos);
                 }
