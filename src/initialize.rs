@@ -1,31 +1,8 @@
-use crate::systems::{
-    camera::CanHaveCamera,
-    drone,
-    movement::{TargetIndicator, TargetPosition},
-};
+use crate::bundles::*;
+use crate::systems::{drone, unit::TargetIndicator};
 use bevy::{math::Quat, prelude::*};
 use bevy_contrib_colors::Tailwind;
 use bevy_mod_picking::*;
-
-#[derive(Bundle)]
-struct UnitBundle {
-    target_position: TargetPosition,
-    pickable_mesh: PickableMesh,
-    highlightable_pick_mesh: HighlightablePickMesh,
-    selectable_pick_mesh: SelectablePickMesh,
-    can_have_camera: CanHaveCamera,
-}
-impl UnitBundle {
-    pub fn new(camera_entity: Entity) -> Self {
-        Self {
-            target_position: TargetPosition::new(),
-            pickable_mesh: PickableMesh::new(camera_entity),
-            highlightable_pick_mesh: HighlightablePickMesh::new(),
-            selectable_pick_mesh: SelectablePickMesh::new(),
-            can_have_camera: CanHaveCamera::new(),
-        }
-    }
-}
 
 pub fn setup(
     mut commands: Commands,
@@ -43,7 +20,7 @@ pub fn setup(
             ..Default::default()
         })
         .with(PickableMesh::new(camera_entity))
-        // cube
+        // Units
         .spawn(PbrComponents {
             mesh: meshes.add(Mesh::from(shape::Cube { size: 1.0 })),
             material: materials.add(Tailwind::RED400.into()),
@@ -58,17 +35,6 @@ pub fn setup(
             ..Default::default()
         })
         .with_bundle(UnitBundle::new(camera_entity))
-        // Target sphere
-        .spawn(PbrComponents {
-            mesh: meshes.add(Mesh::from(shape::Icosphere {
-                subdivisions: 4,
-                radius: 0.5,
-            })),
-            material: materials.add(Tailwind::GREEN400.into()),
-            translation: Translation::new(5.0, 1.0, 3.0),
-            ..Default::default()
-        })
-        .with(TargetIndicator)
         // Drone
         .spawn(PbrComponents {
             mesh: meshes.add(Mesh::from(shape::Icosphere {
@@ -81,7 +47,18 @@ pub fn setup(
             ..Default::default()
         })
         .with(drone::Drone::default())
-        .with(CanHaveCamera::new_with_camera(camera_entity))
+        .with_bundle(UnitBundle::new_with_has_camera(camera_entity))
+        // Target sphere
+        .spawn(PbrComponents {
+            mesh: meshes.add(Mesh::from(shape::Icosphere {
+                subdivisions: 4,
+                radius: 0.5,
+            })),
+            material: materials.add(Tailwind::GREEN400.into()),
+            translation: Translation::new(5.0, 1.0, 3.0),
+            ..Default::default()
+        })
+        .with(TargetIndicator)
         // light
         .spawn(LightComponents {
             translation: Translation::new(4.0, 8.0, 4.0),

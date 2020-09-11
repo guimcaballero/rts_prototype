@@ -3,6 +3,8 @@ use bevy_mod_picking::*;
 
 const SPEED: f32 = 0.1;
 
+pub struct Unit;
+
 pub struct TargetPosition {
     pub pos: Option<Vec3>,
 }
@@ -95,5 +97,14 @@ pub fn set_target_for_selected(
         } else {
             println!("can't find position");
         }
+    }
+}
+
+pub struct UnitPlugin;
+impl Plugin for UnitPlugin {
+    fn build(&self, app: &mut AppBuilder) {
+        app.add_system(move_to_target.system())
+            .add_system(set_target_for_selected.system())
+            .add_system(show_target_indicator.system());
     }
 }
