@@ -2,7 +2,6 @@ use bevy::{math::Vec3, prelude::*, render::camera::Camera};
 use bevy_mod_picking::*;
 
 const SPEED: f32 = 0.1;
-const CAMERA_SPEED: f32 = 3.0;
 
 pub struct TargetPosition {
     pub pos: Option<Vec3>,
@@ -95,66 +94,6 @@ pub fn set_target_for_selected(
             }
         } else {
             println!("can't find position");
-        }
-    }
-}
-
-pub fn wasd_movement(
-    time: Res<Time>,
-    keyboard_input: Res<Input<KeyCode>>,
-    mut query_camera: Query<(&Camera, &mut Translation, &mut Rotation)>,
-) {
-    for (_, mut translation, mut rotation) in &mut query_camera.iter() {
-        if !keyboard_input.pressed(KeyCode::Space) {
-            if keyboard_input.pressed(KeyCode::W) {
-                translation.0 += rotation.0.mul_vec3(Vec3::new(0.0, 1.0, 0.0))
-                    * time.delta_seconds
-                    * CAMERA_SPEED;
-            }
-            if keyboard_input.pressed(KeyCode::A) {
-                translation.0 += rotation.0.mul_vec3(Vec3::new(-1.0, 0.0, 0.0))
-                    * time.delta_seconds
-                    * CAMERA_SPEED;
-            }
-            if keyboard_input.pressed(KeyCode::S) {
-                translation.0 += rotation.0.mul_vec3(Vec3::new(0.0, -1.0, 0.0))
-                    * time.delta_seconds
-                    * CAMERA_SPEED;
-            }
-            if keyboard_input.pressed(KeyCode::D) {
-                translation.0 += rotation.0.mul_vec3(Vec3::new(1.0, 0.0, 0.0))
-                    * time.delta_seconds
-                    * CAMERA_SPEED;
-            }
-            if keyboard_input.pressed(KeyCode::Q) {
-                translation.0 += rotation.0.mul_vec3(Vec3::new(0.0, 0.0, -1.0))
-                    * time.delta_seconds
-                    * CAMERA_SPEED;
-            }
-            if keyboard_input.pressed(KeyCode::E) {
-                translation.0 += rotation.0.mul_vec3(Vec3::new(0.0, 0.0, 1.0))
-                    * time.delta_seconds
-                    * CAMERA_SPEED;
-            }
-        }
-
-        if keyboard_input.pressed(KeyCode::Space) {
-            if keyboard_input.pressed(KeyCode::A) {
-                rotation.0 *=
-                    Quat::from_rotation_ypr(1.0 * time.delta_seconds * CAMERA_SPEED, 0.0, 0.0);
-            }
-            if keyboard_input.pressed(KeyCode::D) {
-                rotation.0 *=
-                    Quat::from_rotation_ypr(-1.0 * time.delta_seconds * CAMERA_SPEED, 0.0, 0.0);
-            }
-            if keyboard_input.pressed(KeyCode::W) {
-                rotation.0 *=
-                    Quat::from_rotation_ypr(0.0, 1.0 * time.delta_seconds * CAMERA_SPEED, 0.0);
-            }
-            if keyboard_input.pressed(KeyCode::S) {
-                rotation.0 *=
-                    Quat::from_rotation_ypr(0.0, -1.0 * time.delta_seconds * CAMERA_SPEED, 0.0);
-            }
         }
     }
 }
