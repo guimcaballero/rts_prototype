@@ -10,8 +10,8 @@ fn select_single_unit(
     mouse_button_inputs: Res<Input<MouseButton>>,
     mut query: Query<&mut Unit>,
 ) {
-    // Only run when space is not pressed and we just clicked the left button
-    if keyboard_input.pressed(KeyCode::Space)
+    // Only run when control is not pressed and we just clicked the left button
+    if keyboard_input.pressed(KeyCode::LControl)
         || !mouse_button_inputs.just_pressed(MouseButton::Left)
     {
         return;
@@ -40,8 +40,8 @@ fn select_multiple_units(
     mouse_button_inputs: Res<Input<MouseButton>>,
     query: Query<&mut Unit>,
 ) {
-    // Only run when space is pressed and we just clicked the left button
-    if !keyboard_input.pressed(KeyCode::Space)
+    // Only run when control is pressed and we just clicked the left button
+    if !keyboard_input.pressed(KeyCode::LControl)
         || !mouse_button_inputs.just_pressed(MouseButton::Left)
     {
         return;

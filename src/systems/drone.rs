@@ -72,7 +72,7 @@ fn drone_movement_system(
     mut query: Query<(&mut Drone, &mut Translation, &Rotation)>,
 ) {
     for (mut options, mut translation, rotation) in &mut query.iter() {
-        if keyboard_input.pressed(KeyCode::Space) {
+        if keyboard_input.pressed(KeyCode::C) {
             options.velocity = Vec3::zero();
             continue;
         }

@@ -1,4 +1,4 @@
-use crate::systems::{camera, drone, selection, unit};
+use crate::systems::{camera, debug, drone, selection, unit};
 use bevy::prelude::*;
 use bevy_mod_picking::*;
 
@@ -22,5 +22,6 @@ fn main() {
         .add_plugin(camera::CameraPlugin)
         .add_plugin(unit::UnitPlugin)
         .add_plugin(selection::SelectionPlugin)
+        .add_plugin(debug::DebugPlugin)
         .run();
 }

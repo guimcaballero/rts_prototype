@@ -31,7 +31,7 @@ pub fn setup(
         .spawn(PbrComponents {
             mesh: meshes.add(Mesh::from(shape::Cube { size: 1.0 })),
             material: materials.add(Tailwind::RED400.into()),
-            translation: Translation::new(5.0, 1.0, 3.0),
+            translation: Translation::new(0.0, 1.0, -9.0),
             ..Default::default()
         })
         .with_bundle(UnitBundle::new(camera_entity))

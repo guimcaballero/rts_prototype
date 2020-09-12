@@ -336,7 +336,7 @@ dependencies = [
 [[package]]
 name = "bevy_mod_picking"
 version = "0.1.0"
-source = "git+https://github.com/guimcaballero/bevy_mod_picking?branch=add-entity-to-pickintersection#7b837affe60d9389c67730273d0a4de1558dcd03"
+source = "git+https://github.com/guimcaballero/bevy_mod_picking?branch=develop#52c4358f2d74644860906cdd98f9d6e730981ca7"
 dependencies = [
  "bevy",
 ]

@@ -33,7 +33,7 @@ impl TargetPosition {
 }
 
 pub struct TargetIndicator;
-pub fn show_target_indicator(
+fn show_target_indicator(
     mut indicator_query: Query<(&TargetIndicator, &mut Translation, &mut Draw)>,
     mut unit_query: Query<(&Unit, &TargetPosition)>,
 ) {
@@ -61,7 +61,7 @@ pub fn show_target_indicator(
 }
 
 // Moves towards the target while it's not selected
-pub fn move_to_target(mut query: Query<(&Unit, &mut TargetPosition, &mut Translation)>) {
+fn move_to_target(mut query: Query<(&Unit, &mut TargetPosition, &mut Translation)>) {
     for (_, mut target, mut translation) in &mut query.iter() {
         if let Some(target_pos) = target.pos {
             let mut direction = target_pos - translation.0;
@@ -70,14 +70,13 @@ pub fn move_to_target(mut query: Query<(&Unit, &mut TargetPosition, &mut Transla
                 let direction = direction.normalize() * SPEED;
                 translation.0 += direction;
             } else {
-                println!("reached destination {}", target_pos);
                 target.pos = None;
             }
         }
     }
 }
 
-pub fn set_target_for_selected(
+fn set_target_for_selected(
     pick_state: Res<PickState>,
     mouse_button_inputs: Res<Input<MouseButton>>,
     mut query: Query<(&Unit, &mut TargetPosition)>,
@@ -101,8 +100,6 @@ pub fn set_target_for_selected(
                     target.update_to_vec(&pos);
                 }
             }
-        } else {
-            println!("can't find position");
         }
     }
 }
