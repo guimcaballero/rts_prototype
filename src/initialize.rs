@@ -1,5 +1,5 @@
 use crate::bundles::*;
-use crate::systems::{drone, unit::TargetIndicator};
+use crate::systems::{drone, unit::TargetIndicator, walker};
 use bevy::{math::Quat, prelude::*};
 use bevy_contrib_colors::Tailwind;
 use bevy_mod_picking::*;
@@ -27,6 +27,7 @@ pub fn setup(
             translation: Translation::new(0.0, 1.0, 0.0),
             ..Default::default()
         })
+        .with(walker::Walker::default())
         .with_bundle(UnitBundle::new(camera_entity))
         .spawn(PbrComponents {
             mesh: meshes.add(Mesh::from(shape::Cube { size: 1.0 })),
@@ -34,6 +35,7 @@ pub fn setup(
             translation: Translation::new(0.0, 1.0, -9.0),
             ..Default::default()
         })
+        .with(walker::Walker::default())
         .with_bundle(UnitBundle::new(camera_entity))
         // Drone
         .spawn(PbrComponents {

@@ -22,6 +22,10 @@ impl CanHaveCamera {
             camera_entity: Some(camera_entity),
         }
     }
+
+    pub fn has_camera(&self) -> bool {
+        self.camera_entity.is_some()
+    }
 }
 
 /// Sets the camera position to whatever the current object that has it

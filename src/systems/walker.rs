@@ -1,37 +1,35 @@
 use crate::helpers::movement::*;
 use crate::systems::camera::CanHaveCamera;
-use bevy::{input::mouse::MouseMotion, prelude::*};
-
-// From https://github.com/mcpar-land/bevy_fly_camera/blob/master/src/lib.rs
+use bevy::{input::mouse::MouseMotion, math::Vec3, prelude::*};
 
 #[derive(Default)]
 struct State {
     mouse_motion_event_reader: EventReader<MouseMotion>,
 }
 
-pub struct Drone {
-    /// The speed the Drone moves at. Defaults to `1.0`
+pub struct Walker {
+    /// The speed the Walker moves at. Defaults to `1.0`
     pub speed: f32,
-    /// The maximum speed the Drone can move at. Defaults to `0.5`
+    /// The maximum speed the Walker can move at. Defaults to `0.5`
     pub max_speed: f32,
-    /// The sensitivity of the Drone's motion based on mouse movement. Defaults to `3.0`
+    /// The sensitivity of the Walker's motion based on mouse movement. Defaults to `3.0`
     pub sensitivity: f32,
     /// The amount of deceleration to apply to the camera's motion. Defaults to `1.0`
     pub friction: f32,
-    /// The current pitch of the Drone in degrees. This value is always up-to-date
+    /// The current pitch of the Walker in degrees. This value is always up-to-date
     pub pitch: f32,
-    /// The current pitch of the Drone in degrees. This value is always up-to-date
+    /// The current pitch of the Walker in degrees. This value is always up-to-date
     pub yaw: f32,
-    /// The current velocity of the Drone. This value is always up-to-date
+    /// The current velocity of the Walker. This value is always up-to-date
     pub velocity: Vec3,
 }
-impl Default for Drone {
+impl Default for Walker {
     fn default() -> Self {
         Self {
             speed: 1.0,
             max_speed: 0.5,
             sensitivity: 1.0,
-            friction: 1.3,
+            friction: 10.0,
             pitch: 0.0,
             yaw: 0.0,
             velocity: Vec3::zero(),
@@ -39,19 +37,13 @@ impl Default for Drone {
     }
 }
 
-/// Move the Drone according to keys pressed
-fn drone_movement_system(
+fn wasd_walk_for_camera_holder(
     time: Res<Time>,
     keyboard_input: Res<Input<KeyCode>>,
-    mut query: Query<(&mut Drone, &CanHaveCamera, &mut Translation, &Rotation)>,
+    mut query: Query<(&mut Walker, &CanHaveCamera, &mut Translation, &Rotation)>,
 ) {
     for (mut options, can_have_camera, mut translation, rotation) in &mut query.iter() {
         if !can_have_camera.has_camera() {
-            continue;
-        }
-
-        if keyboard_input.pressed(KeyCode::C) {
-            options.velocity = Vec3::zero();
             continue;
         }
 
@@ -93,12 +85,12 @@ fn drone_movement_system(
 }
 
 /// Rotate according to mouse if the LShift key is pressed
-fn drone_mouse_rotation_system(
+fn walker_mouse_rotation_system(
     time: Res<Time>,
     mut state: ResMut<State>,
     mouse_motion_events: Res<Events<MouseMotion>>,
     keyboard_input: Res<Input<KeyCode>>,
-    mut query: Query<(&mut Drone, &CanHaveCamera, &mut Rotation)>,
+    mut query: Query<(&mut Walker, &CanHaveCamera, &mut Rotation)>,
 ) {
     // Only enable rotation while the LShift is pressed
     if !keyboard_input.pressed(KeyCode::LShift) {
@@ -136,11 +128,11 @@ fn drone_mouse_rotation_system(
     }
 }
 
-pub struct DronePlugin;
-impl Plugin for DronePlugin {
+pub struct WalkerPlugin;
+impl Plugin for WalkerPlugin {
     fn build(&self, app: &mut AppBuilder) {
         app.init_resource::<State>()
-            .add_system(drone_movement_system.system())
-            .add_system(drone_mouse_rotation_system.system());
+            .add_system(wasd_walk_for_camera_holder.system())
+            .add_system(walker_mouse_rotation_system.system());
     }
 }
