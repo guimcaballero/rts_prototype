@@ -1,5 +1,6 @@
 use crate::bundles::*;
-use crate::systems::{drone, unit::TargetIndicator, walker};
+use crate::helpers::shapes::*;
+use crate::systems::{drone, selection::DragSelectionRectangle, unit::TargetIndicator, walker};
 use bevy::{math::Quat, prelude::*};
 use bevy_contrib_colors::Tailwind;
 use bevy_mod_picking::*;
@@ -8,6 +9,7 @@ pub fn setup(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
+    mut color_materials: ResMut<Assets<ColorMaterial>>,
 ) {
     let camera_entity = Entity::new();
 
@@ -61,6 +63,22 @@ pub fn setup(
             ..Default::default()
         })
         .with(TargetIndicator)
+        // Drag Selection rectangle
+        .spawn(SpriteComponents {
+            material: color_materials.add(Color::rgba(0.0, 0.0, 0.8, 0.1).into()),
+            mesh: meshes.add(rectangle_mesh()),
+            sprite: Sprite {
+                size: Vec2::new(1.0, 1.0),
+                ..Default::default()
+            },
+            draw: Draw {
+                is_visible: false,
+                ..Default::default()
+            },
+            translation: Vec3::new(0.0, 0.1, 0.0).into(),
+            ..Default::default()
+        })
+        .with(DragSelectionRectangle)
         // light
         .spawn(LightComponents {
             translation: Translation::new(4.0, 8.0, 4.0),
