@@ -1,4 +1,4 @@
-use crate::systems::{camera, drone, selection, unit, walker};
+use crate::systems::{camera, debug, drone, selection, unit, walker};
 use bevy::prelude::*;
 use bevy_mod_picking::*;
 

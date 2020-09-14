@@ -14,8 +14,6 @@ pub struct Drone {
     pub speed: f32,
     /// The maximum speed the Drone can move at. Defaults to `0.5`
     pub max_speed: f32,
-    /// The sensitivity of the Drone's motion based on mouse movement. Defaults to `3.0`
-    pub sensitivity: f32,
     /// The amount of deceleration to apply to the camera's motion. Defaults to `1.0`
     pub friction: f32,
     /// The current pitch of the Drone in degrees. This value is always up-to-date
@@ -30,10 +28,9 @@ impl Default for Drone {
         Self {
             speed: 1.0,
             max_speed: 0.5,
-            sensitivity: 1.0,
             friction: 1.3,
-            pitch: 0.0,
-            yaw: 0.0,
+            pitch: 60.0,
+            yaw: -90.0,
             velocity: Vec3::zero(),
         }
     }
@@ -118,8 +115,8 @@ fn drone_mouse_rotation_system(
             continue;
         }
 
-        options.yaw -= delta.x() * options.sensitivity * time.delta_seconds;
-        options.pitch += delta.y() * options.sensitivity * time.delta_seconds;
+        options.yaw -= delta.x() * 3.0 * time.delta_seconds;
+        options.pitch += delta.y() * 3.0 * time.delta_seconds;
 
         if options.pitch > 89.9 {
             options.pitch = 89.9;
@@ -127,6 +124,8 @@ fn drone_mouse_rotation_system(
         if options.pitch < -89.9 {
             options.pitch = -89.9;
         }
+
+        println!("{} {}", options.pitch, options.yaw);
 
         let yaw_radians = options.yaw.to_radians();
         let pitch_radians = options.pitch.to_radians();

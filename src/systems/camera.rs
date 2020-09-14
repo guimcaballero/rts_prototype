@@ -4,7 +4,7 @@ use bevy_mod_picking::*;
 
 pub struct CanHaveCamera {
     translation_offset: Vec3,
-    rotation_offset: Quat,
+    pub rotation_offset: Quat,
     camera_entity: Option<Entity>,
 }
 impl CanHaveCamera {
