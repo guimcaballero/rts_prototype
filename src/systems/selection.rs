@@ -1,6 +1,6 @@
 use crate::helpers::shapes::*;
 use crate::systems::unit::Unit;
-use bevy::{prelude::*, render::camera::Camera};
+use bevy::prelude::*;
 use bevy_contrib_colors::*;
 use bevy_mod_picking::*;
 
@@ -25,7 +25,7 @@ fn select_single_unit(
 
     // Select the top pick
     if let Some(top_pick) = pick_state.top() {
-        let entity = top_pick.get_entity();
+        let entity = top_pick.entity();
         if let Ok(mut unit) = query.entity(entity) {
             if let Some(mut unit) = unit.get() {
                 unit.selected = true;
@@ -50,7 +50,7 @@ fn select_multiple_units(
 
     // Select the top pick
     if let Some(top_pick) = pick_state.top() {
-        let entity = top_pick.get_entity();
+        let entity = top_pick.entity();
         if let Ok(mut unit) = query.entity(entity) {
             if let Some(mut unit) = unit.get() {
                 unit.selected = true;
@@ -79,22 +79,12 @@ fn drag_select(
     mut meshes: ResMut<Assets<Mesh>>,
     mut query: Query<(&mut Unit, &Translation)>,
     mut drag_selection_rectangle: Query<(&Handle<Mesh>, &DragSelectionRectangle, &mut Draw)>,
-    mut camera_query: Query<(&Transform, &Camera)>,
 ) {
-    // Get the camera
-    let mut view_matrix = Mat4::zero();
-    let mut projection_matrix = Mat4::zero();
-    for (transform, camera) in &mut camera_query.iter() {
-        view_matrix = transform.value.inverse();
-        projection_matrix = camera.projection_matrix;
-    }
-
     // If we start clicking, save the initial_position
     if mouse_button_inputs.just_pressed(MouseButton::Left) {
         if let Some(top_pick) = pick_state.top() {
-            let pos = top_pick.get_pick_coord_world(projection_matrix, view_matrix);
-            dbg!(pos);
-            selection_state.initial_position = Some(pos);
+            let pos = top_pick.position();
+            selection_state.initial_position = Some(*pos);
         } else {
             // if there is no top pick, set it to none
             selection_state.initial_position = None;
@@ -110,7 +100,7 @@ fn drag_select(
     // If initial_pos is a Some, it means we just finished dragging
     if let Some(initial_position) = selection_state.initial_position {
         if let Some(top_pick) = pick_state.top() {
-            let final_position = top_pick.get_pick_coord_world(projection_matrix, view_matrix);
+            let final_position = *top_pick.position();
 
             // Fix for clicking
             if (final_position - initial_position).length() < 0.1 {
@@ -165,7 +155,7 @@ fn change_color_for_highlighted_units(
 
         // If the mouse is over it, light blue
         if let Some(top_pick) = pick_state.top() {
-            let top_entity = top_pick.get_entity();
+            let top_entity = top_pick.entity();
 
             if entity == top_entity {
                 *current_color = Tailwind::BLUE300;

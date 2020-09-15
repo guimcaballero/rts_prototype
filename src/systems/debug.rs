@@ -1,4 +1,4 @@
-use bevy::{prelude::*, render::camera::Camera};
+use bevy::prelude::*;
 use bevy_mod_picking::*;
 
 struct DebugCursor;
@@ -7,19 +7,10 @@ fn update_debug_cursor_position(
     pick_state: ResMut<PickState>,
     keyboard_input: Res<Input<KeyCode>>,
     mut query: Query<(&DebugCursor, &mut Translation, &mut Draw)>,
-    mut camera_query: Query<(&Transform, &Camera)>,
 ) {
-    // Get the camera
-    let mut view_matrix = Mat4::zero();
-    let mut projection_matrix = Mat4::zero();
-    for (transform, camera) in &mut camera_query.iter() {
-        view_matrix = transform.value.inverse();
-        projection_matrix = camera.projection_matrix;
-    }
-
     // Set the cursor translation to the top pick's world coordinates
     if let Some(top_pick) = pick_state.top() {
-        let pos = top_pick.get_pick_coord_world(projection_matrix, view_matrix);
+        let pos = *top_pick.position();
 
         dbg!(top_pick);
         for (_, mut translation, mut draw) in &mut query.iter() {

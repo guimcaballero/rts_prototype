@@ -84,7 +84,7 @@ fn switch_camera_to_entity(
             camera
         };
 
-        let entity = top_pick.get_entity();
+        let entity = top_pick.entity();
         let unit_result = query.entity(entity);
 
         if let Ok(mut unit) = unit_result {

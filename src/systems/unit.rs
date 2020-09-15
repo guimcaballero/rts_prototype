@@ -80,24 +80,15 @@ fn set_target_for_selected(
     pick_state: Res<PickState>,
     mouse_button_inputs: Res<Input<MouseButton>>,
     mut query: Query<(&Unit, &mut TargetPosition)>,
-    mut camera_query: Query<(&Transform, &Camera)>,
 ) {
     if mouse_button_inputs.just_pressed(MouseButton::Right) {
-        // Get the camera
-        let mut view_matrix = Mat4::zero();
-        let mut projection_matrix = Mat4::zero();
-        for (transform, camera) in &mut camera_query.iter() {
-            view_matrix = transform.value.inverse();
-            projection_matrix = camera.projection_matrix;
-        }
-
         // Get the world position
         if let Some(top_pick) = pick_state.top() {
-            let pos = top_pick.get_pick_coord_world(projection_matrix, view_matrix);
+            let pos = top_pick.position();
 
             for (unit, mut target) in &mut query.iter() {
                 if unit.selected {
-                    target.update_to_vec(&pos);
+                    target.update_to_vec(pos);
                 }
             }
         }
