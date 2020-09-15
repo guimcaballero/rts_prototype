@@ -53,13 +53,18 @@ pub fn setup(
         .with(drone::Drone::default())
         .with_bundle(UnitBundle::new_with_has_camera(camera_entity))
         // Target sphere
-        .spawn(PbrComponents {
-            mesh: meshes.add(Mesh::from(shape::Icosphere {
-                subdivisions: 4,
-                radius: 0.5,
-            })),
-            material: materials.add(Tailwind::GREEN400.into()),
-            translation: Translation::new(5.0, 1.0, 3.0),
+        .spawn(SpriteComponents {
+            material: color_materials.add(Color::rgb(0.0, 0.0, 0.8).into()),
+            mesh: meshes.add(circle_mesh()),
+            sprite: Sprite {
+                size: Vec2::new(1.0, 1.0),
+                ..Default::default()
+            },
+            draw: Draw {
+                is_visible: false,
+                ..Default::default()
+            },
+            scale: Scale(0.01),
             ..Default::default()
         })
         .with(TargetIndicator)

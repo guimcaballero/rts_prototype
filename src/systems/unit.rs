@@ -1,4 +1,4 @@
-use bevy::{math::Vec3, prelude::*, render::camera::Camera};
+use bevy::{math::Vec3, prelude::*};
 use bevy_mod_picking::PickState;
 
 const SPEED: f32 = 0.1;
@@ -50,6 +50,7 @@ fn show_target_indicator(
 
             for (_, mut translation, _) in &mut indicator_query.iter() {
                 translation.0 = target_pos;
+                translation.0.set_y(0.3);
             }
         }
     }
