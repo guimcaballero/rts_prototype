@@ -22,36 +22,6 @@ pub fn setup(
             ..Default::default()
         })
         .with(PickableMesh::new(camera_entity))
-        // Units
-        .spawn(PbrComponents {
-            mesh: meshes.add(Mesh::from(shape::Cube { size: 1.0 })),
-            material: materials.add(Tailwind::RED400.into()),
-            translation: Translation::new(0.0, 1.0, 0.0),
-            ..Default::default()
-        })
-        .with(walker::Walker::default())
-        .with_bundle(UnitBundle::new(camera_entity))
-        .spawn(PbrComponents {
-            mesh: meshes.add(Mesh::from(shape::Cube { size: 1.0 })),
-            material: materials.add(Tailwind::RED400.into()),
-            translation: Translation::new(0.0, 1.0, -9.0),
-            ..Default::default()
-        })
-        .with(walker::Walker::default())
-        .with_bundle(UnitBundle::new(camera_entity))
-        // Drone
-        .spawn(PbrComponents {
-            mesh: meshes.add(Mesh::from(shape::Icosphere {
-                subdivisions: 4,
-                radius: 0.5,
-            })),
-            material: materials.add(Tailwind::RED400.into()),
-            translation: Translation::new(-25.0, 40.0, 0.0),
-            rotation: Rotation(Quat::from_xyzw(-0.3, -0.5, -0.3, 0.5).normalize()),
-            ..Default::default()
-        })
-        .with(drone::Drone::default())
-        .with_bundle(UnitBundle::new_with_has_camera(camera_entity))
         // Target sphere
         .spawn(SpriteComponents {
             material: color_materials.add(Color::rgb(0.0, 0.0, 0.8).into()),
@@ -98,4 +68,87 @@ pub fn setup(
                 ..Default::default()
             },
         );
+
+    create_walker(
+        &mut commands,
+        &mut meshes,
+        &mut materials,
+        camera_entity,
+        Vec3::zero(),
+        false,
+    );
+    create_walker(
+        &mut commands,
+        &mut meshes,
+        &mut materials,
+        camera_entity,
+        Vec3::new(10.0, 1.0, 0.0),
+        false,
+    );
+    create_drone(
+        &mut commands,
+        &mut meshes,
+        &mut materials,
+        camera_entity,
+        Vec3::new(10.0, 20.0, 5.0),
+        false,
+    );
+    create_drone(
+        &mut commands,
+        &mut meshes,
+        &mut materials,
+        camera_entity,
+        Vec3::new(-25.0, 60.0, 0.0),
+        true,
+    );
+}
+
+fn create_walker(
+    commands: &mut Commands,
+    meshes: &mut Assets<Mesh>,
+    materials: &mut Assets<StandardMaterial>,
+    camera_entity: Entity,
+    position: Vec3,
+    with_camera: bool,
+) {
+    commands
+        .spawn(PbrComponents {
+            mesh: meshes.add(Mesh::from(shape::Cube { size: 1.0 })),
+            material: materials.add(Tailwind::RED400.into()),
+            translation: Translation::new(position.x(), 1.0, position.z()),
+            ..Default::default()
+        })
+        .with(walker::Walker::default())
+        .with_bundle(if with_camera {
+            UnitBundle::new_with_has_camera(camera_entity)
+        } else {
+            UnitBundle::new(camera_entity)
+        });
+}
+
+fn create_drone(
+    commands: &mut Commands,
+    meshes: &mut Assets<Mesh>,
+    materials: &mut Assets<StandardMaterial>,
+    camera_entity: Entity,
+    position: Vec3,
+    with_camera: bool,
+) {
+    commands
+        .spawn(PbrComponents {
+            mesh: meshes.add(Mesh::from(shape::Icosphere {
+                subdivisions: 4,
+                radius: 1.0,
+            })),
+            material: materials.add(Tailwind::RED400.into()),
+            translation: Translation::from(position),
+            rotation: Rotation(Quat::from_xyzw(-0.3, -0.5, -0.3, 0.5).normalize()),
+            ..Default::default()
+        })
+        .with(drone::Drone::default())
+        .with_bundle(if with_camera {
+            UnitBundle::new_with_has_camera(camera_entity)
+        } else {
+            UnitBundle::new(camera_entity)
+        });
 }
