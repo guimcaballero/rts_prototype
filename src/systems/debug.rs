@@ -6,16 +6,16 @@ struct DebugCursor;
 fn update_debug_cursor_position(
     pick_state: ResMut<PickState>,
     keyboard_input: Res<Input<KeyCode>>,
-    mut query: Query<(&DebugCursor, &mut Translation, &mut Draw)>,
+    mut query: Query<(&DebugCursor, &mut Transform, &mut Draw)>,
 ) {
     // Set the cursor translation to the top pick's world coordinates
     if let Some(top_pick) = pick_state.top() {
         let pos = *top_pick.position();
 
         dbg!(top_pick);
-        for (_, mut translation, mut draw) in &mut query.iter() {
+        for (_, mut transform, mut draw) in &mut query.iter() {
             if keyboard_input.pressed(KeyCode::P) {
-                translation.0 = pos;
+                transform.set_translation(pos);
                 draw.is_visible = true;
             } else {
                 draw.is_visible = false;
@@ -37,7 +37,7 @@ fn setup_debug_cursor(
                 radius: 0.1,
             })),
             material: materials.add(Color::rgb(0.0, 1.0, 0.0).into()),
-            translation: Translation::new(1.5, 1.5, 1.5),
+            transform: Transform::from_translation(Vec3::new(1.5, 1.5, 1.5)),
             ..Default::default()
         })
         .with(DebugCursor);

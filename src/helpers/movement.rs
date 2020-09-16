@@ -1,18 +1,18 @@
 use bevy::prelude::*;
 
-pub fn forward_vector(rotation: &Rotation) -> Vec3 {
+pub fn forward_vector(rotation: &Quat) -> Vec3 {
     rotation.mul_vec3(Vec3::unit_z()).normalize()
 }
 
-pub fn forward_walk_vector(rotation: &Rotation) -> Vec3 {
+pub fn forward_walk_vector(rotation: &Quat) -> Vec3 {
     let f = forward_vector(rotation);
     let f_flattened = Vec3::new(f.x(), 0.0, f.z()).normalize();
     f_flattened
 }
 
-pub fn strafe_vector(rotation: &Rotation) -> Vec3 {
+pub fn strafe_vector(rotation: &Quat) -> Vec3 {
     // Rotate it 90 degrees to get the strafe direction
-    Rotation::from_rotation_y(90.0f32.to_radians())
+    Quat::from_rotation_y(90.0f32.to_radians())
         .mul_vec3(forward_walk_vector(rotation))
         .normalize()
 }

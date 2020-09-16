@@ -40,9 +40,9 @@ impl Default for Drone {
 fn drone_movement_system(
     time: Res<Time>,
     keyboard_input: Res<Input<KeyCode>>,
-    mut query: Query<(&mut Drone, &CanHaveCamera, &mut Translation, &Rotation)>,
+    mut query: Query<(&mut Drone, &CanHaveCamera, &mut Transform)>,
 ) {
-    for (mut options, can_have_camera, mut translation, rotation) in &mut query.iter() {
+    for (mut options, can_have_camera, mut transform) in &mut query.iter() {
         if !can_have_camera.has_camera() {
             continue;
         }
@@ -58,8 +58,9 @@ fn drone_movement_system(
 
         let any_button_down = axis_h != 0.0 || axis_v != 0.0 || axis_float != 0.0;
 
-        let accel: Vec3 = ((strafe_vector(rotation) * axis_h)
-            + (forward_walk_vector(rotation) * axis_v)
+        let rotation = transform.rotation();
+        let accel: Vec3 = ((strafe_vector(&rotation) * axis_h)
+            + (forward_walk_vector(&rotation) * axis_v)
             + (Vec3::unit_y() * axis_float))
             * options.speed;
 
@@ -85,7 +86,7 @@ fn drone_movement_system(
             options.velocity + delta_friction
         };
 
-        translation.0 += options.velocity;
+        transform.translate(options.velocity);
     }
 }
 
@@ -95,7 +96,7 @@ fn drone_mouse_rotation_system(
     mut state: ResMut<State>,
     mouse_motion_events: Res<Events<MouseMotion>>,
     keyboard_input: Res<Input<KeyCode>>,
-    mut query: Query<(&mut Drone, &CanHaveCamera, &mut Rotation)>,
+    mut query: Query<(&mut Drone, &CanHaveCamera, &mut Transform)>,
 ) {
     // Only enable rotation while the LShift is pressed
     if !keyboard_input.pressed(KeyCode::LShift) {
@@ -110,7 +111,7 @@ fn drone_mouse_rotation_system(
         return;
     }
 
-    for (mut options, can_have_camera, mut rotation) in &mut query.iter() {
+    for (mut options, can_have_camera, mut transform) in &mut query.iter() {
         if !can_have_camera.has_camera() {
             continue;
         }
@@ -125,13 +126,13 @@ fn drone_mouse_rotation_system(
             options.pitch = -89.9;
         }
 
-        println!("{} {}", options.pitch, options.yaw);
-
         let yaw_radians = options.yaw.to_radians();
         let pitch_radians = options.pitch.to_radians();
 
-        rotation.0 = Quat::from_axis_angle(Vec3::unit_y(), yaw_radians)
-            * Quat::from_axis_angle(-Vec3::unit_x(), pitch_radians);
+        transform.set_rotation(
+            Quat::from_axis_angle(Vec3::unit_y(), yaw_radians)
+                * Quat::from_axis_angle(-Vec3::unit_x(), pitch_radians),
+        );
     }
 }
 

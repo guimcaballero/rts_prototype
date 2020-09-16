@@ -52,7 +52,7 @@ fn drag_select(
     pick_state: Res<PickState>,
     mouse_button_inputs: Res<Input<MouseButton>>,
     mut meshes: ResMut<Assets<Mesh>>,
-    mut query: Query<(&mut Unit, &Translation)>,
+    mut query: Query<(&mut Unit, &Transform)>,
     mut drag_selection_rectangle: Query<(&Handle<Mesh>, &DragSelectionRectangle, &mut Draw)>,
 ) {
     // If we start clicking, save the initial_position
@@ -92,14 +92,14 @@ fn drag_select(
             }
 
             // Select the units
-            for (mut unit, translation) in &mut query.iter() {
+            for (mut unit, transform) in &mut query.iter() {
                 // Mark the units as selected if they are inside the rectangle
                 unit.selected = is_between_two_values(
-                    translation.0.x(),
+                    transform.translation().x(),
                     initial_position.x(),
                     final_position.x(),
                 ) && is_between_two_values(
-                    translation.0.z(),
+                    transform.translation().z(),
                     initial_position.z(),
                     final_position.z(),
                 );

@@ -34,7 +34,7 @@ pub fn setup(
                 is_visible: false,
                 ..Default::default()
             },
-            scale: Scale(0.01),
+            transform: Transform::from_scale(0.01),
             ..Default::default()
         })
         .with(TargetIndicator)
@@ -50,24 +50,17 @@ pub fn setup(
                 is_visible: false,
                 ..Default::default()
             },
-            translation: Vec3::new(0.0, 0.1, 0.0).into(),
+            transform: Transform::from_translation(Vec3::new(0.0, 0.1, 0.0)),
             ..Default::default()
         })
         .with(DragSelectionRectangle)
         // light
         .spawn(LightComponents {
-            translation: Translation::new(4.0, 8.0, 4.0),
+            transform: Transform::from_translation(Vec3::new(4.0, 8.0, 4.0)),
             ..Default::default()
         })
         // camera
-        .spawn_as_entity(
-            camera_entity,
-            Camera3dComponents {
-                translation: Translation::new(0.0, 0.0, 0.0),
-                rotation: Rotation(Quat::from_xyzw(-0.3, -0.5, -0.3, 0.5).normalize()),
-                ..Default::default()
-            },
-        );
+        .spawn_as_entity(camera_entity, Camera3dComponents::default());
 
     create_walker(
         &mut commands,
@@ -115,7 +108,7 @@ fn create_walker(
         .spawn(PbrComponents {
             mesh: meshes.add(Mesh::from(shape::Cube { size: 1.0 })),
             material: materials.add(Tailwind::RED400.into()),
-            translation: Translation::new(position.x(), 1.0, position.z()),
+            transform: Transform::from_translation(Vec3::new(position.x(), 1.0, position.z())),
             ..Default::default()
         })
         .with(walker::Walker::default())
@@ -141,8 +134,10 @@ fn create_drone(
                 radius: 1.0,
             })),
             material: materials.add(Tailwind::RED400.into()),
-            translation: Translation::from(position),
-            rotation: Rotation(Quat::from_xyzw(-0.3, -0.5, -0.3, 0.5).normalize()),
+            transform: Transform::new(Mat4::from_rotation_translation(
+                Quat::from_xyzw(-0.3, -0.5, -0.3, 0.5).normalize(),
+                position,
+            )),
             ..Default::default()
         })
         .with(drone::Drone::default())

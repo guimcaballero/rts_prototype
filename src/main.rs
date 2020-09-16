@@ -24,6 +24,6 @@ fn main() {
         .add_plugin(unit::UnitPlugin)
         .add_plugin(selection::SelectionPlugin)
         .add_plugin(walker::WalkerPlugin)
-        //.add_plugin(debug::DebugPlugin)
+        // .add_plugin(debug::DebugPlugin)
         .run();
 }

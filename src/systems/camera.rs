@@ -30,16 +30,20 @@ impl CanHaveCamera {
 
 /// Sets the camera position to whatever the current object that has it
 fn update_camera_position(
-    camera_query: Query<(&Camera, &mut Translation, &mut Rotation)>,
-    mut has_camera_query: Query<(&CanHaveCamera, &Translation, &Rotation)>,
+    camera_query: Query<(&Camera, &mut Transform)>,
+    mut has_camera_query: Query<(&CanHaveCamera, &Transform)>,
 ) {
-    for (can_have_camera, parent_trans, parent_rot) in &mut has_camera_query.iter() {
+    for (can_have_camera, parent_transform) in &mut has_camera_query.iter() {
         if let Some(camera_entity) = can_have_camera.camera_entity {
             if let Ok(mut camera) = camera_query.entity(camera_entity) {
-                if let Some((_, mut translation, mut rotation)) = camera.get() {
-                    translation.0 = parent_trans.0 + can_have_camera.translation_offset;
-                    // TODO I'm pretty sure this isn't correct
-                    rotation.0 = parent_rot.0 * can_have_camera.rotation_offset;
+                if let Some((_, mut transform)) = camera.get() {
+                    let new_translation =
+                        parent_transform.translation() + can_have_camera.translation_offset;
+                    let new_rotation =
+                        parent_transform.rotation() * can_have_camera.rotation_offset;
+
+                    *transform.value_mut() =
+                        Mat4::from_rotation_translation(new_rotation, new_translation);
                 }
             }
         }

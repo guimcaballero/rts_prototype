@@ -34,7 +34,7 @@ impl TargetPosition {
 
 pub struct TargetIndicator;
 fn show_target_indicator(
-    mut indicator_query: Query<(&TargetIndicator, &mut Translation, &mut Draw)>,
+    mut indicator_query: Query<(&TargetIndicator, &mut Transform, &mut Draw)>,
     mut unit_query: Query<(&Unit, &TargetPosition)>,
 ) {
     let mut selections_with_target_exist = false;
@@ -45,12 +45,11 @@ fn show_target_indicator(
         }
 
         // Set the Indicator to the Target position
-        if let Some(target_pos) = target.pos {
+        if let Some(target_position) = target.pos {
             selections_with_target_exist = true;
 
-            for (_, mut translation, _) in &mut indicator_query.iter() {
-                translation.0 = target_pos;
-                translation.0.set_y(0.3);
+            for (_, mut transform, _) in &mut indicator_query.iter() {
+                transform.set_translation(Vec3::new(target_position.x(), 0.3, target_position.z()));
             }
         }
     }
@@ -62,14 +61,14 @@ fn show_target_indicator(
 }
 
 // Moves towards the target while it's not selected
-fn move_to_target(mut query: Query<(&Unit, &mut TargetPosition, &mut Translation)>) {
-    for (_, mut target, mut translation) in &mut query.iter() {
+fn move_to_target(mut query: Query<(&Unit, &mut TargetPosition, &mut Transform)>) {
+    for (_, mut target, mut transform) in &mut query.iter() {
         if let Some(target_pos) = target.pos {
-            let mut direction = target_pos - translation.0;
+            let mut direction = target_pos - transform.translation();
             direction.set_y(0.0);
             if direction.length() > 0.3 {
                 let direction = direction.normalize() * SPEED;
-                translation.0 += direction;
+                transform.translate(direction);
             } else {
                 target.pos = None;
             }

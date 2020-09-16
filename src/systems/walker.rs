@@ -40,9 +40,9 @@ impl Default for Walker {
 fn wasd_walk_for_camera_holder(
     time: Res<Time>,
     keyboard_input: Res<Input<KeyCode>>,
-    mut query: Query<(&mut Walker, &CanHaveCamera, &mut Translation, &Rotation)>,
+    mut query: Query<(&mut Walker, &CanHaveCamera, &mut Transform)>,
 ) {
-    for (mut options, can_have_camera, mut translation, rotation) in &mut query.iter() {
+    for (mut options, can_have_camera, mut transform) in &mut query.iter() {
         if !can_have_camera.has_camera() {
             continue;
         }
@@ -53,8 +53,9 @@ fn wasd_walk_for_camera_holder(
 
         let any_button_down = axis_h != 0.0 || axis_v != 0.0 || axis_float != 0.0;
 
-        let accel: Vec3 = ((strafe_vector(rotation) * axis_h)
-            + (forward_walk_vector(rotation) * axis_v)
+        let rotation = transform.rotation();
+        let accel: Vec3 = ((strafe_vector(&rotation) * axis_h)
+            + (forward_walk_vector(&rotation) * axis_v)
             + (Vec3::unit_y() * axis_float))
             * options.speed;
 
@@ -80,7 +81,7 @@ fn wasd_walk_for_camera_holder(
             options.velocity + delta_friction
         };
 
-        translation.0 += options.velocity;
+        transform.translate(options.velocity);
     }
 }
 
@@ -90,7 +91,7 @@ fn walker_mouse_rotation_system(
     mut state: ResMut<State>,
     mouse_motion_events: Res<Events<MouseMotion>>,
     keyboard_input: Res<Input<KeyCode>>,
-    mut query: Query<(&mut Walker, &mut CanHaveCamera, &mut Rotation)>,
+    mut query: Query<(&mut Walker, &mut CanHaveCamera, &mut Transform)>,
 ) {
     // Only enable rotation while the LShift is pressed
     if !keyboard_input.pressed(KeyCode::LShift) {
@@ -105,7 +106,7 @@ fn walker_mouse_rotation_system(
         return;
     }
 
-    for (mut options, mut can_have_camera, mut rotation) in &mut query.iter() {
+    for (mut options, mut can_have_camera, mut transform) in &mut query.iter() {
         if !can_have_camera.has_camera() {
             continue;
         }
@@ -123,7 +124,7 @@ fn walker_mouse_rotation_system(
         let yaw_radians = options.yaw.to_radians();
         let pitch_radians = options.pitch.to_radians();
 
-        rotation.0 = Quat::from_axis_angle(Vec3::unit_y(), yaw_radians);
+        transform.set_rotation(Quat::from_axis_angle(Vec3::unit_y(), yaw_radians));
         can_have_camera.rotation_offset = Quat::from_axis_angle(-Vec3::unit_x(), pitch_radians);
     }
 }
