@@ -11,3 +11,6 @@ bevy_contrib_colors = { git = "https://github.com/guimcaballero/bevy_contrib_col
 
 [patch.crates-io]
 bevy = { git = "https://github.com/bevyengine/bevy" , branch = "master"}
+
+[profile.dev.package."*"]
+opt-level = 3
