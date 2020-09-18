@@ -18,7 +18,7 @@ pub fn setup(
     commands
         // plane
         .spawn(PbrComponents {
-            mesh: meshes.add(Mesh::from(shape::Plane { size: 40.0 })),
+            mesh: meshes.add(Mesh::from(shape::Plane { size: 400.0 })),
             material: materials.add(Tailwind::RED100.into()),
             ..Default::default()
         })
@@ -63,24 +63,20 @@ pub fn setup(
         // camera
         .spawn_as_entity(camera_entity, Camera3dComponents::default());
 
-    create_walker(
-        &mut commands,
-        &mut meshes,
-        &mut materials,
-        &asset_server,
-        camera_entity,
-        Vec3::zero(),
-        false,
-    );
-    create_walker(
-        &mut commands,
-        &mut meshes,
-        &mut materials,
-        &asset_server,
-        camera_entity,
-        Vec3::new(10.0, 1.0, 0.0),
-        false,
-    );
+    for i in 0..5 {
+        for j in 0..5 {
+            create_walker(
+                &mut commands,
+                &mut meshes,
+                &mut materials,
+                &asset_server,
+                camera_entity,
+                Vec3::new(i as f32 * 5.0 - 10.0, 1.0, j as f32 * 5.0 - 10.0),
+                false,
+            );
+        }
+    }
+
     create_drone(
         &mut commands,
         &mut meshes,
