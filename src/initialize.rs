@@ -12,7 +12,12 @@ pub fn setup(
     asset_server: Res<AssetServer>,
     mut color_materials: ResMut<Assets<ColorMaterial>>,
 ) {
-    let camera_entity = Entity::new();
+    let camera_entity = commands
+        .spawn(Camera3dComponents {
+            ..Default::default()
+        })
+        .current_entity()
+        .unwrap();
 
     // add entities to the world
     commands
@@ -59,9 +64,7 @@ pub fn setup(
         .spawn(LightComponents {
             transform: Transform::from_translation(Vec3::new(4.0, 8.0, 4.0)),
             ..Default::default()
-        })
-        // camera
-        .spawn_as_entity(camera_entity, Camera3dComponents::default());
+        });
 
     for i in 0..5 {
         for j in 0..5 {

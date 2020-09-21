@@ -35,16 +35,13 @@ fn update_camera_position(
 ) {
     for (can_have_camera, parent_transform) in &mut has_camera_query.iter() {
         if let Some(camera_entity) = can_have_camera.camera_entity {
-            if let Ok(mut camera) = camera_query.entity(camera_entity) {
-                if let Some((_, mut transform)) = camera.get() {
-                    let new_translation =
-                        parent_transform.translation() + can_have_camera.translation_offset;
-                    let new_rotation =
-                        parent_transform.rotation() * can_have_camera.rotation_offset;
+            if let Ok(mut transform) = camera_query.get_mut::<Transform>(camera_entity) {
+                let new_translation =
+                    parent_transform.translation() + can_have_camera.translation_offset;
+                let new_rotation = parent_transform.rotation() * can_have_camera.rotation_offset;
 
-                    *transform.value_mut() =
-                        Mat4::from_rotation_translation(new_rotation, new_translation);
-                }
+                *transform.value_mut() =
+                    Mat4::from_rotation_translation(new_rotation, new_translation);
             }
         }
     }
