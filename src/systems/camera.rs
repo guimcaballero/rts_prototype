@@ -73,7 +73,7 @@ fn switch_camera_to_entity(
     }
 
     // Get the entity selected
-    if let Some(top_pick) = pick_state.top() {
+    if let Some(top_pick) = pick_state.top(PickGroup::default()) {
         let camera_entity = {
             let mut camera: Option<Entity> = None;
             for (mut can_have_camera, _) in &mut query.iter() {

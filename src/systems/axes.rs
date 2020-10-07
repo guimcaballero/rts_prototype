@@ -3,7 +3,7 @@ use bevy::{
     prelude::*,
     render::{
         camera::Camera,
-        mesh::{Mesh, VertexAttribute},
+        mesh::{Indices, Mesh, VertexAttribute},
         pipeline::PrimitiveTopology,
     },
 };
@@ -78,7 +78,7 @@ impl From<Cone> for Mesh {
                 VertexAttribute::normal(normals),
                 VertexAttribute::uv(uvs),
             ],
-            indices: Some(indices),
+            indices: Some(Indices::U32(indices)),
         }
     }
 }
@@ -178,7 +178,7 @@ impl From<Cylinder> for Mesh {
                 VertexAttribute::normal(normals),
                 VertexAttribute::uv(uvs),
             ],
-            indices: Some(indices),
+            indices: Some(Indices::U32(indices)),
         }
     }
 }
@@ -202,16 +202,13 @@ fn axes_system(
     let mut axes_temp = axes_query.iter();
     let (_, mut axes_transform) = axes_temp.iter().next().unwrap();
 
-    let view_matrix = camera_transform.value().inverse();
+    let view_matrix = camera_transform.value();
     let projection_matrix = camera.projection_matrix;
-    let world_pos: Vec4 = (projection_matrix * view_matrix)
-        .inverse()
-        .mul_vec4(Vec4::new(0.9, -0.9, 0.0, 1.0));
+    let world_pos: Vec4 =
+        (*view_matrix * projection_matrix.inverse()).mul_vec4(Vec4::new(0.7, -0.8, 0.3, 1.0));
     let position: Vec3 = (world_pos / world_pos.w()).truncate().into();
 
-    let forward = camera_transform.rotation() * Vec3::unit_z();
-
-    axes_transform.set_translation(position - 0.3 * forward);
+    axes_transform.set_translation(position);
 }
 
 fn axes_setup(

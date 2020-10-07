@@ -1,5 +1,5 @@
 use bevy::{math::Vec3, prelude::*};
-use bevy_mod_picking::PickState;
+use bevy_mod_picking::*;
 
 const SPEED: f32 = 0.1;
 
@@ -83,7 +83,7 @@ fn set_target_for_selected(
 ) {
     if mouse_button_inputs.just_pressed(MouseButton::Right) {
         // Get the world position
-        if let Some(top_pick) = pick_state.top() {
+        if let Some(top_pick) = pick_state.top(PickGroup::default()) {
             let pos = top_pick.position();
 
             for (unit, mut target) in &mut query.iter() {

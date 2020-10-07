@@ -1,3 +1,4 @@
+#[allow(unused_imports)]
 use crate::systems::{axes, camera, debug, drone, selection, unit, walker};
 use bevy::prelude::*;
 use bevy_mod_picking::*;

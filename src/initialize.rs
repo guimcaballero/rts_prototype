@@ -9,13 +9,14 @@ pub fn setup(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
-    asset_server: Res<AssetServer>,
+    _asset_server: Res<AssetServer>,
     mut color_materials: ResMut<Assets<ColorMaterial>>,
 ) {
     let camera_entity = commands
         .spawn(Camera3dComponents {
             ..Default::default()
         })
+        .with(PickSource::default())
         .current_entity()
         .unwrap();
 
@@ -27,7 +28,7 @@ pub fn setup(
             material: materials.add(Tailwind::RED100.into()),
             ..Default::default()
         })
-        .with(PickableMesh::new(camera_entity))
+        .with(PickableMesh::default())
         // Target sphere
         .spawn(SpriteComponents {
             material: color_materials.add(Color::rgb(0.0, 0.0, 0.8).into()),
@@ -66,80 +67,69 @@ pub fn setup(
             ..Default::default()
         });
 
+    let walker_mesh = meshes.add(Mesh::from(shape::Cube { size: 1.0 }));
+    let walker_material = materials.add(Tailwind::RED400.into());
     for i in 0..5 {
         for j in 0..5 {
             create_walker(
                 &mut commands,
-                &mut meshes,
-                &mut materials,
-                &asset_server,
-                camera_entity,
+                walker_mesh,
+                walker_material,
+                None,
                 Vec3::new(i as f32 * 5.0 - 10.0, 1.0, j as f32 * 5.0 - 10.0),
-                false,
             );
         }
     }
 
+    let drone_mesh = meshes.add(Mesh::from(shape::Icosphere {
+        subdivisions: 4,
+        radius: 1.0,
+    }));
     create_drone(
         &mut commands,
-        &mut meshes,
-        &mut materials,
-        &asset_server,
-        camera_entity,
+        drone_mesh,
+        walker_material,
+        None,
         Vec3::new(10.0, 20.0, 5.0),
-        false,
     );
     create_drone(
         &mut commands,
-        &mut meshes,
-        &mut materials,
-        &asset_server,
-        camera_entity,
+        drone_mesh,
+        walker_material,
+        Some(camera_entity),
         Vec3::new(-25.0, 60.0, 0.0),
-        true,
     );
 }
 
 fn create_walker(
     commands: &mut Commands,
-    meshes: &mut Assets<Mesh>,
-    materials: &mut Assets<StandardMaterial>,
-    _asset_server: &Res<AssetServer>,
-    camera_entity: Entity,
+    mesh: Handle<Mesh>,
+    material: Handle<StandardMaterial>,
+    camera_entity: Option<Entity>,
     position: Vec3,
-    with_camera: bool,
 ) {
     commands
         .spawn(PbrComponents {
-            mesh: meshes.add(Mesh::from(shape::Cube { size: 1.0 })),
-            material: materials.add(Tailwind::RED400.into()),
+            mesh,
+            material,
             transform: Transform::from_translation(Vec3::new(position.x(), 1.0, position.z())),
             ..Default::default()
         })
         .with(walker::Walker::default())
-        .with_bundle(if with_camera {
-            UnitBundle::new_with_has_camera(camera_entity)
-        } else {
-            UnitBundle::new(camera_entity)
-        });
+        .with_bundle(UnitBundle::new(camera_entity));
 }
 
 fn create_drone(
     commands: &mut Commands,
-    meshes: &mut Assets<Mesh>,
-    materials: &mut Assets<StandardMaterial>,
-    _asset_server: &Res<AssetServer>,
-    camera_entity: Entity,
+    mesh: Handle<Mesh>,
+    material: Handle<StandardMaterial>,
+    camera_entity: Option<Entity>,
     position: Vec3,
-    with_camera: bool,
 ) {
     commands
         .spawn(PbrComponents {
-            mesh: meshes.add(Mesh::from(shape::Icosphere {
-                subdivisions: 4,
-                radius: 1.0,
-            })),
-            material: materials.add(Tailwind::RED400.into()),
+            mesh,
+            material,
             transform: Transform::new(Mat4::from_rotation_translation(
                 Quat::from_xyzw(-0.3, -0.5, -0.3, 0.5).normalize(),
                 position,
@@ -147,9 +137,5 @@ fn create_drone(
             ..Default::default()
         })
         .with(drone::Drone::default())
-        .with_bundle(if with_camera {
-            UnitBundle::new_with_has_camera(camera_entity)
-        } else {
-            UnitBundle::new(camera_entity)
-        });
+        .with_bundle(UnitBundle::new(camera_entity));
 }

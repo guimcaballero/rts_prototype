@@ -9,7 +9,7 @@ fn update_debug_cursor_position(
     mut query: Query<(&DebugCursor, &mut Transform, &mut Draw)>,
 ) {
     // Set the cursor translation to the top pick's world coordinates
-    if let Some(top_pick) = pick_state.top() {
+    if let Some(top_pick) = pick_state.top(PickGroup::default()) {
         let pos = *top_pick.position();
 
         dbg!(top_pick);

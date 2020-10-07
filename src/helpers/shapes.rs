@@ -1,8 +1,11 @@
-use bevy::{prelude::*, render::mesh::VertexAttribute};
+use bevy::{
+    prelude::*,
+    render::mesh::{Indices, VertexAttribute},
+};
 
 pub fn rectangle_mesh() -> Mesh {
     let mut mesh = Mesh::new(bevy::render::pipeline::PrimitiveTopology::TriangleList);
-    mesh.indices = Some(Vec::from([0, 1, 2, 0, 2, 3]));
+    mesh.indices = Some(Indices::U32(Vec::from([0, 1, 2, 0, 2, 3])));
     mesh.attributes = rectangle_attributes(Vec3::zero(), Vec3::zero());
 
     mesh
@@ -37,12 +40,12 @@ pub fn rectangle_attributes(a: Vec3, b: Vec3) -> Vec<VertexAttribute> {
 
 pub fn circle_mesh() -> Mesh {
     let mut mesh = Mesh::new(bevy::render::pipeline::PrimitiveTopology::TriangleList);
-    mesh.indices = Some(vec![
+    mesh.indices = Some(Indices::U32(vec![
         0, 3, 1, 1, 3, 2, 1, 4, 0, 4, 5, 0, 5, 6, 0, 4, 7, 5, 1, 8, 4, 8, 9, 4, 1, 10, 8, 2, 11, 1,
         11, 12, 1, 12, 13, 1, 11, 14, 12, 2, 15, 11, 15, 16, 11, 2, 17, 15, 3, 18, 2, 18, 19, 2,
         19, 20, 2, 18, 21, 19, 3, 22, 18, 22, 23, 18, 3, 24, 22, 0, 25, 3, 25, 26, 3, 26, 27, 3,
         25, 28, 26, 0, 29, 25, 29, 30, 25, 0, 31, 29,
-    ]);
+    ]));
     mesh.attributes = circle_attributes();
 
     mesh

@@ -24,7 +24,7 @@ fn select_units(
     }
 
     // Select the top pick
-    if let Some(top_pick) = pick_state.top() {
+    if let Some(top_pick) = pick_state.top(PickGroup::default()) {
         let entity = top_pick.entity();
         if let Ok(mut unit) = query.entity(entity) {
             if let Some(mut unit) = unit.get() {
@@ -57,7 +57,7 @@ fn drag_select(
 ) {
     // If we start clicking, save the initial_position
     if mouse_button_inputs.just_pressed(MouseButton::Left) {
-        if let Some(top_pick) = pick_state.top() {
+        if let Some(top_pick) = pick_state.top(PickGroup::default()) {
             let pos = top_pick.position();
             selection_state.initial_position = Some(*pos);
         } else {
@@ -74,7 +74,7 @@ fn drag_select(
 
     // If initial_pos is a Some, it means we just finished dragging
     if let Some(initial_position) = selection_state.initial_position {
-        if let Some(top_pick) = pick_state.top() {
+        if let Some(top_pick) = pick_state.top(PickGroup::default()) {
             let final_position = *top_pick.position();
 
             // Fix for clicking
@@ -129,7 +129,7 @@ fn change_color_for_highlighted_units(
         };
 
         // If the mouse is over it, light blue
-        if let Some(top_pick) = pick_state.top() {
+        if let Some(top_pick) = pick_state.top(PickGroup::default()) {
             let top_entity = top_pick.entity();
 
             if entity == top_entity {
