@@ -49,14 +49,12 @@ fn wasd_walk_for_camera_holder(
 
         let axis_h = movement_axis(&keyboard_input, KeyCode::D, KeyCode::A);
         let axis_v = movement_axis(&keyboard_input, KeyCode::S, KeyCode::W);
-        let axis_float = movement_axis(&keyboard_input, KeyCode::E, KeyCode::Q);
 
-        let any_button_down = axis_h != 0.0 || axis_v != 0.0 || axis_float != 0.0;
+        let any_button_down = axis_h != 0.0 || axis_v != 0.0;
 
         let rotation = transform.rotation();
         let accel: Vec3 = ((strafe_vector(&rotation) * axis_h)
-            + (forward_walk_vector(&rotation) * axis_v)
-            + (Vec3::unit_y() * axis_float))
+            + (forward_walk_vector(&rotation) * axis_v))
             * options.speed;
 
         let friction: Vec3 = if options.velocity.length() != 0.0 && !any_button_down {

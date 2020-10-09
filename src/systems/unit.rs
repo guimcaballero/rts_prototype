@@ -2,6 +2,7 @@ use bevy::{math::Vec3, prelude::*};
 use bevy_mod_picking::*;
 
 const SPEED: f32 = 0.1;
+const SAFE_DISTANCE: f32 = 2.5;
 
 pub struct Unit {
     pub selected: bool,
@@ -61,18 +62,50 @@ fn show_target_indicator(
 }
 
 // Moves towards the target while it's not selected
-fn move_to_target(mut query: Query<(&Unit, &mut TargetPosition, &mut Transform)>) {
-    for (_, mut target, mut transform) in &mut query.iter() {
+fn unit_movement(mut query: Query<(&Unit, &mut TargetPosition, &mut Transform, Entity)>) {
+    // TODO Do something to divide by space or something
+    let mut unit_positions = Vec::new();
+    for (_, _, transform, entity) in &mut query.iter() {
+        unit_positions.push((entity, transform.translation()));
+    }
+
+    for (_, mut target, mut transform, entity) in &mut query.iter() {
+        let translation = transform.translation();
+        let mut velocity = Vec3::zero();
+
+        // Keep a distance to other units
+        let mut separation = Vec3::zero();
+        let mut units_nearby = 0;
+        for (other_entity, other_translation) in &unit_positions {
+            if *other_entity != entity {
+                let difference = translation - *other_translation;
+                let distance_squared = difference.length_squared();
+
+                if distance_squared < SAFE_DISTANCE * SAFE_DISTANCE {
+                    units_nearby += 1;
+                    separation += difference.normalize()
+                        * (SAFE_DISTANCE - distance_squared.sqrt())
+                        / SAFE_DISTANCE;
+                }
+            }
+        }
+        velocity += separation;
+
+        // Move towards target
         if let Some(target_pos) = target.pos {
             let mut direction = target_pos - transform.translation();
             direction.set_y(0.0);
-            if direction.length() > 0.3 {
+
+            if direction.length() > 0.1 + units_nearby as f32 {
                 let direction = direction.normalize() * SPEED;
-                transform.translate(direction);
+                velocity += direction;
             } else {
+                // When we reach the target, remove it
                 target.pos = None;
             }
         }
+
+        transform.translate(velocity);
     }
 }
 
@@ -98,7 +131,7 @@ fn set_target_for_selected(
 pub struct UnitPlugin;
 impl Plugin for UnitPlugin {
     fn build(&self, app: &mut AppBuilder) {
-        app.add_system(move_to_target.system())
+        app.add_system(unit_movement.system())
             .add_system(set_target_for_selected.system())
             .add_system(show_target_indicator.system());
     }

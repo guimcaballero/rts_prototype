@@ -68,13 +68,12 @@ pub fn setup(
         });
 
     let walker_mesh = meshes.add(Mesh::from(shape::Cube { size: 1.0 }));
-    let walker_material = materials.add(Tailwind::RED400.into());
     for i in 0..5 {
         for j in 0..5 {
             create_walker(
                 &mut commands,
                 walker_mesh,
-                walker_material,
+                materials.add(Tailwind::RED400.into()),
                 None,
                 Vec3::new(i as f32 * 5.0 - 10.0, 1.0, j as f32 * 5.0 - 10.0),
             );
@@ -88,14 +87,14 @@ pub fn setup(
     create_drone(
         &mut commands,
         drone_mesh,
-        walker_material,
+        materials.add(Tailwind::RED400.into()),
         None,
         Vec3::new(10.0, 20.0, 5.0),
     );
     create_drone(
         &mut commands,
         drone_mesh,
-        walker_material,
+        materials.add(Tailwind::RED400.into()),
         Some(camera_entity),
         Vec3::new(-25.0, 60.0, 0.0),
     );
