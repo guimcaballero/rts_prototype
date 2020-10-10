@@ -1,15 +1,12 @@
 use bevy::{math::Vec3, prelude::*};
-use bevy_mod_picking::*;
 
 pub struct Unit {
-    pub selected: bool,
     pub speed: f32,
     pub social_distance: f32,
 }
 impl Default for Unit {
     fn default() -> Self {
         Self {
-            selected: false,
             speed: 0.1,
             social_distance: 1.5,
         }
@@ -30,34 +27,6 @@ impl TargetPosition {
         } else {
             self.pos = Some(vec.clone());
         }
-    }
-}
-
-pub struct TargetIndicator;
-fn show_target_indicator(
-    mut indicator_query: Query<(&TargetIndicator, &mut Transform, &mut Draw)>,
-    mut unit_query: Query<(&Unit, &TargetPosition)>,
-) {
-    let mut selections_with_target_exist = false;
-    for (unit, target) in &mut unit_query.iter() {
-        // We only want selected items
-        if !unit.selected {
-            continue;
-        }
-
-        // Set the Indicator to the Target position
-        if let Some(target_position) = target.pos {
-            selections_with_target_exist = true;
-
-            for (_, mut transform, _) in &mut indicator_query.iter() {
-                transform.set_translation(Vec3::new(target_position.x(), 0.3, target_position.z()));
-            }
-        }
-    }
-
-    // Toggle drawability according to if there is anything selected
-    for (_, _, mut draw) in &mut indicator_query.iter() {
-        draw.is_visible = selections_with_target_exist;
     }
 }
 
@@ -116,30 +85,9 @@ fn unit_movement(mut query: Query<(&Unit, &mut TargetPosition, &mut Transform, E
     }
 }
 
-fn set_target_for_selected(
-    pick_state: Res<PickState>,
-    mouse_button_inputs: Res<Input<MouseButton>>,
-    mut query: Query<(&Unit, &mut TargetPosition)>,
-) {
-    if mouse_button_inputs.just_pressed(MouseButton::Right) {
-        // Get the world position
-        if let Some(top_pick) = pick_state.top(PickGroup::default()) {
-            let pos = top_pick.position();
-
-            for (unit, mut target) in &mut query.iter() {
-                if unit.selected {
-                    target.update_to_vec(pos);
-                }
-            }
-        }
-    }
-}
-
 pub struct UnitPlugin;
 impl Plugin for UnitPlugin {
     fn build(&self, app: &mut AppBuilder) {
-        app.add_system(unit_movement.system())
-            .add_system(set_target_for_selected.system())
-            .add_system(show_target_indicator.system());
+        app.add_system(unit_movement.system());
     }
 }

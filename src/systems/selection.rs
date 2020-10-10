@@ -1,15 +1,20 @@
 use crate::helpers::shapes::*;
-use crate::systems::{enemy::Enemy, unit::Unit};
+use crate::systems::unit::TargetPosition;
 use bevy::prelude::*;
 use bevy_contrib_colors::*;
 use bevy_mod_picking::*;
+
+#[derive(Default)]
+pub struct Selectable {
+    pub selected: bool,
+}
 
 /// Selects units
 fn select_units(
     pick_state: Res<PickState>,
     keyboard_input: Res<Input<KeyCode>>,
     mouse_button_inputs: Res<Input<MouseButton>>,
-    mut query: Query<Without<Enemy, &mut Unit>>,
+    mut query: Query<&mut Selectable>,
 ) {
     // Only run when control is not pressed and we just clicked the left button
     if !mouse_button_inputs.just_pressed(MouseButton::Left) {
@@ -18,16 +23,16 @@ fn select_units(
 
     if !keyboard_input.pressed(KeyCode::LControl) {
         // Deselect all units
-        for mut unit in &mut query.iter() {
-            unit.selected = false;
+        for mut selectable in &mut query.iter() {
+            selectable.selected = false;
         }
     }
 
     // Select the top pick
     if let Some(top_pick) = pick_state.top(PickGroup::default()) {
         let entity = top_pick.entity();
-        if let Ok(mut unit) = query.entity(entity) {
-            if let Some(mut unit) = unit.get() {
+        if let Ok(mut selectable) = query.entity(entity) {
+            if let Some(mut unit) = selectable.get() {
                 unit.selected = true;
             }
         }
@@ -52,7 +57,7 @@ fn drag_select(
     pick_state: Res<PickState>,
     mouse_button_inputs: Res<Input<MouseButton>>,
     mut meshes: ResMut<Assets<Mesh>>,
-    mut query: Query<Without<Enemy, (&mut Unit, &Transform)>>,
+    mut query: Query<(&mut Selectable, &Transform)>,
     mut drag_selection_rectangle: Query<(&Handle<Mesh>, &DragSelectionRectangle, &mut Draw)>,
 ) {
     // If we start clicking, save the initial_position
@@ -92,9 +97,9 @@ fn drag_select(
             }
 
             // Select the units
-            for (mut unit, transform) in &mut query.iter() {
+            for (mut selectable, transform) in &mut query.iter() {
                 // Mark the units as selected if they are inside the rectangle
-                unit.selected = is_between_two_values(
+                selectable.selected = is_between_two_values(
                     transform.translation().x(),
                     initial_position.x(),
                     final_position.x(),
@@ -116,13 +121,13 @@ fn is_between_two_values(x: f32, a: f32, b: f32) -> bool {
 fn change_color_for_highlighted_units(
     pick_state: Res<PickState>,
     mut materials: ResMut<Assets<StandardMaterial>>,
-    mut query: Query<Without<Enemy, (&Unit, &Handle<StandardMaterial>, Entity)>>,
+    mut query: Query<(&Selectable, &Handle<StandardMaterial>, Entity)>,
 ) {
-    for (unit, material_handle, entity) in &mut query.iter() {
+    for (selectable, material_handle, entity) in &mut query.iter() {
         let current_color = &mut materials.get_mut(material_handle).unwrap().albedo;
 
         // Strong blue if selected, red if not
-        *current_color = if unit.selected {
+        *current_color = if selectable.selected {
             Tailwind::BLUE600
         } else {
             Tailwind::RED400
@@ -139,12 +144,32 @@ fn change_color_for_highlighted_units(
     }
 }
 
+fn set_target_for_selected(
+    pick_state: Res<PickState>,
+    mouse_button_inputs: Res<Input<MouseButton>>,
+    mut query: Query<(&Selectable, &mut TargetPosition)>,
+) {
+    if mouse_button_inputs.just_pressed(MouseButton::Right) {
+        // Get the world position
+        if let Some(top_pick) = pick_state.top(PickGroup::default()) {
+            let pos = top_pick.position();
+
+            for (selectable, mut target) in &mut query.iter() {
+                if selectable.selected {
+                    target.update_to_vec(pos);
+                }
+            }
+        }
+    }
+}
+
 pub struct SelectionPlugin;
 impl Plugin for SelectionPlugin {
     fn build(&self, app: &mut AppBuilder) {
         app.init_resource::<SelectionState>()
             .add_system(select_units.system())
             .add_system(drag_select.system())
+            .add_system(set_target_for_selected.system())
             .add_system(change_color_for_highlighted_units.system());
     }
 }

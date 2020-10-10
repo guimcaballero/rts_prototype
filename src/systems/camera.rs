@@ -1,4 +1,7 @@
-use crate::systems::unit::{TargetPosition, Unit};
+use crate::systems::{
+    selection::Selectable,
+    unit::{TargetPosition, Unit},
+};
 use bevy::{prelude::*, render::camera::Camera};
 use bevy_mod_picking::*;
 
@@ -42,13 +45,17 @@ fn update_camera_position(
 }
 
 fn reset_unit_target_if_it_has_camera(
-    // TODO Can this be a Changed?
-    mut query: Query<(&CanHaveCamera, &mut TargetPosition, &mut Unit, &mut Draw)>,
+    mut query: Query<(
+        Changed<CanHaveCamera>,
+        &mut TargetPosition,
+        &mut Selectable,
+        &mut Draw,
+    )>,
 ) {
-    for (can_have_camera, mut target, mut unit, mut draw) in &mut query.iter() {
+    for (can_have_camera, mut target, mut selectable, mut draw) in &mut query.iter() {
         if let Some(_) = can_have_camera.camera_entity {
             target.pos = None;
-            unit.selected = false;
+            selectable.selected = false;
             draw.is_visible = false;
         } else {
             draw.is_visible = true;

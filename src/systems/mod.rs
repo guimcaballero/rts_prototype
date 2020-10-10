@@ -5,5 +5,6 @@ pub mod drone;
 pub mod enemy;
 pub mod health;
 pub mod selection;
+pub mod target_indicator;
 pub mod unit;
 pub mod walker;

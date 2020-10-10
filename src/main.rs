@@ -1,5 +1,7 @@
 #[allow(unused_imports)]
-use crate::systems::{axes, camera, debug, drone, enemy, health, selection, unit, walker};
+use crate::systems::{
+    axes, camera, debug, drone, enemy, health, selection, target_indicator, unit, walker,
+};
 use bevy::prelude::*;
 use bevy_mod_picking::*;
 
@@ -29,5 +31,6 @@ fn main() {
         .add_plugin(enemy::EnemyPlugin)
         // .add_plugin(debug::DebugPlugin)
         .add_plugin(axes::AxesPlugin)
+        .add_plugin(target_indicator::TargetIndicatorPlugin)
         .run();
 }

@@ -1,6 +1,11 @@
 use crate::bundles::*;
 use crate::helpers::shapes::*;
-use crate::systems::{drone, enemy, selection::DragSelectionRectangle, unit::*, walker};
+use crate::systems::{
+    drone, enemy,
+    selection::{DragSelectionRectangle, Selectable},
+    unit::*,
+    walker,
+};
 use bevy::{math::Quat, prelude::*};
 use bevy_contrib_colors::Tailwind;
 use bevy_mod_picking::*;
@@ -29,22 +34,6 @@ pub fn setup(
             ..Default::default()
         })
         .with(PickableMesh::default())
-        // Target sphere
-        .spawn(SpriteComponents {
-            material: color_materials.add(Color::rgb(0.0, 0.0, 0.8).into()),
-            mesh: meshes.add(circle_mesh()),
-            sprite: Sprite {
-                size: Vec2::new(1.0, 1.0),
-                ..Default::default()
-            },
-            draw: Draw {
-                is_visible: false,
-                ..Default::default()
-            },
-            transform: Transform::from_scale(0.01),
-            ..Default::default()
-        })
-        .with(TargetIndicator)
         // Drag Selection rectangle
         .spawn(SpriteComponents {
             material: color_materials.add(Color::rgba(0.0, 0.0, 0.8, 0.1).into()),
@@ -133,6 +122,7 @@ fn create_walker(
             ..Default::default()
         })
         .with(walker::Walker::default())
+        .with(Selectable::default())
         .with_bundle(UnitBundle {
             unit: Unit {
                 speed: 0.1,
@@ -160,6 +150,7 @@ fn create_drone(
             ..Default::default()
         })
         .with(drone::Drone::default())
+        .with(Selectable::default())
         .with_bundle(UnitBundle {
             unit: Unit {
                 speed: 0.3,
