@@ -1,6 +1,6 @@
 use crate::bundles::*;
 use crate::helpers::shapes::*;
-use crate::systems::{drone, selection::DragSelectionRectangle, unit::*, walker};
+use crate::systems::{drone, enemy, selection::DragSelectionRectangle, unit::*, walker};
 use bevy::{math::Quat, prelude::*};
 use bevy_contrib_colors::Tailwind;
 use bevy_mod_picking::*;
@@ -107,6 +107,7 @@ pub fn setup(
             ..Default::default()
         })
         .with(walker::Walker::default())
+        .with(enemy::Enemy::default())
         .with_bundle(UnitBundle {
             unit: Unit {
                 speed: 0.1,

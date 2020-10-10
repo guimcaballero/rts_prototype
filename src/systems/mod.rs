@@ -2,6 +2,8 @@ pub mod axes;
 pub mod camera;
 pub mod debug;
 pub mod drone;
+pub mod enemy;
+pub mod health;
 pub mod selection;
 pub mod unit;
 pub mod walker;
