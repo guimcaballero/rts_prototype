@@ -1,5 +1,5 @@
 use crate::helpers::shapes::*;
-use crate::systems::unit::Unit;
+use crate::systems::{enemy::Enemy, unit::Unit};
 use bevy::prelude::*;
 use bevy_contrib_colors::*;
 use bevy_mod_picking::*;
@@ -9,7 +9,7 @@ fn select_units(
     pick_state: Res<PickState>,
     keyboard_input: Res<Input<KeyCode>>,
     mouse_button_inputs: Res<Input<MouseButton>>,
-    mut query: Query<&mut Unit>,
+    mut query: Query<Without<Enemy, &mut Unit>>,
 ) {
     // Only run when control is not pressed and we just clicked the left button
     if !mouse_button_inputs.just_pressed(MouseButton::Left) {
@@ -52,7 +52,7 @@ fn drag_select(
     pick_state: Res<PickState>,
     mouse_button_inputs: Res<Input<MouseButton>>,
     mut meshes: ResMut<Assets<Mesh>>,
-    mut query: Query<(&mut Unit, &Transform)>,
+    mut query: Query<Without<Enemy, (&mut Unit, &Transform)>>,
     mut drag_selection_rectangle: Query<(&Handle<Mesh>, &DragSelectionRectangle, &mut Draw)>,
 ) {
     // If we start clicking, save the initial_position
@@ -116,7 +116,7 @@ fn is_between_two_values(x: f32, a: f32, b: f32) -> bool {
 fn change_color_for_highlighted_units(
     pick_state: Res<PickState>,
     mut materials: ResMut<Assets<StandardMaterial>>,
-    mut query: Query<(&Unit, &Handle<StandardMaterial>, Entity)>,
+    mut query: Query<Without<Enemy, (&Unit, &Handle<StandardMaterial>, Entity)>>,
 ) {
     for (unit, material_handle, entity) in &mut query.iter() {
         let current_color = &mut materials.get_mut(material_handle).unwrap().albedo;
