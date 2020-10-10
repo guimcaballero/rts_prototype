@@ -74,6 +74,7 @@ fn unit_movement(mut query: Query<(&Unit, &mut TargetPosition, &mut Transform, E
         let mut velocity = Vec3::zero();
 
         // Keep a distance to other units
+        // Inspired from https://github.com/JohnPeel/flock-rs
         let mut separation = Vec3::zero();
         let mut units_nearby = 0;
         for (other_entity, other_translation) in &unit_positions {
@@ -103,6 +104,11 @@ fn unit_movement(mut query: Query<(&Unit, &mut TargetPosition, &mut Transform, E
                 // When we reach the target, remove it
                 target.pos = None;
             }
+        }
+
+        // If unit is on the floor, we don't allow going down
+        if translation.y() <= 1.01 && velocity.y() < 0. {
+            velocity.set_y(0.);
         }
 
         transform.translate(velocity);

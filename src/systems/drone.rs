@@ -59,10 +59,16 @@ fn drone_movement_system(
         let any_button_down = axis_h != 0.0 || axis_v != 0.0 || axis_float != 0.0;
 
         let rotation = transform.rotation();
-        let accel: Vec3 = ((strafe_vector(&rotation) * axis_h)
+        let mut accel: Vec3 = ((strafe_vector(&rotation) * axis_h)
             + (forward_walk_vector(&rotation) * axis_v)
             + (Vec3::unit_y() * axis_float))
             * options.speed;
+
+        let translation = transform.translation();
+        let y = translation.y();
+        if y <= 10. {
+            accel += Vec3::unit_y() * (10. - y).abs();
+        }
 
         let friction: Vec3 = if options.velocity.length() != 0.0 && !any_button_down {
             options.velocity.normalize() * -1.0 * options.friction
@@ -85,6 +91,11 @@ fn drone_movement_system(
         } else {
             options.velocity + delta_friction
         };
+
+        // If unit is on the floor, we don't allow going down
+        if translation.y() <= 1.01 && options.velocity.y() < 0. {
+            options.velocity.set_y(0.);
+        }
 
         transform.translate(options.velocity);
     }
