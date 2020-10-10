@@ -1,27 +1,27 @@
 use bevy::{math::Vec3, prelude::*};
 use bevy_mod_picking::*;
 
-const SPEED: f32 = 0.1;
-const SAFE_DISTANCE: f32 = 2.5;
-
 pub struct Unit {
     pub selected: bool,
+    pub speed: f32,
+    pub social_distance: f32,
 }
-impl Unit {
-    pub fn new() -> Self {
-        Self { selected: false }
+impl Default for Unit {
+    fn default() -> Self {
+        Self {
+            selected: false,
+            speed: 0.1,
+            social_distance: 1.5,
+        }
     }
 }
 
+#[derive(Default)]
 pub struct TargetPosition {
     pub pos: Option<Vec3>,
 }
-impl TargetPosition {
-    #[inline(always)]
-    pub fn new() -> Self {
-        Self { pos: None }
-    }
 
+impl TargetPosition {
     pub fn update_to_vec(&mut self, vec: &Vec3) {
         if let Some(pos) = self.pos.as_mut() {
             pos.set_x(vec.x());
@@ -65,11 +65,11 @@ fn show_target_indicator(
 fn unit_movement(mut query: Query<(&Unit, &mut TargetPosition, &mut Transform, Entity)>) {
     // TODO Do something to divide by space or something
     let mut unit_positions = Vec::new();
-    for (_, _, transform, entity) in &mut query.iter() {
-        unit_positions.push((entity, transform.translation()));
+    for (unit, _, transform, entity) in &mut query.iter() {
+        unit_positions.push((entity, transform.translation(), unit.social_distance));
     }
 
-    for (_, mut target, mut transform, entity) in &mut query.iter() {
+    for (unit, mut target, mut transform, entity) in &mut query.iter() {
         let translation = transform.translation();
         let mut velocity = Vec3::zero();
 
@@ -77,16 +77,17 @@ fn unit_movement(mut query: Query<(&Unit, &mut TargetPosition, &mut Transform, E
         // Inspired from https://github.com/JohnPeel/flock-rs
         let mut separation = Vec3::zero();
         let mut units_nearby = 0;
-        for (other_entity, other_translation) in &unit_positions {
+        for (other_entity, other_translation, social_distance) in &unit_positions {
             if *other_entity != entity {
                 let difference = translation - *other_translation;
                 let distance_squared = difference.length_squared();
+                let minimum_distance = unit.social_distance + social_distance;
 
-                if distance_squared < SAFE_DISTANCE * SAFE_DISTANCE {
+                if distance_squared < minimum_distance * minimum_distance {
                     units_nearby += 1;
                     separation += difference.normalize()
-                        * (SAFE_DISTANCE - distance_squared.sqrt())
-                        / SAFE_DISTANCE;
+                        * (minimum_distance - distance_squared.sqrt())
+                        / minimum_distance;
                 }
             }
         }
@@ -97,8 +98,8 @@ fn unit_movement(mut query: Query<(&Unit, &mut TargetPosition, &mut Transform, E
             let mut direction = target_pos - transform.translation();
             direction.set_y(0.0);
 
-            if direction.length() > 0.1 + units_nearby as f32 {
-                let direction = direction.normalize() * SPEED;
+            if direction.length() > 0.3 + units_nearby as f32 {
+                let direction = direction.normalize() * unit.speed;
                 velocity += direction;
             } else {
                 // When we reach the target, remove it

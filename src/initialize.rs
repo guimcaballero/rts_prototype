@@ -1,6 +1,6 @@
 use crate::bundles::*;
 use crate::helpers::shapes::*;
-use crate::systems::{drone, selection::DragSelectionRectangle, unit::TargetIndicator, walker};
+use crate::systems::{drone, selection::DragSelectionRectangle, unit::*, walker};
 use bevy::{math::Quat, prelude::*};
 use bevy_contrib_colors::Tailwind;
 use bevy_mod_picking::*;
@@ -98,6 +98,23 @@ pub fn setup(
         Some(camera_entity),
         Vec3::new(-25.0, 60.0, 0.0),
     );
+
+    commands
+        .spawn(PbrComponents {
+            mesh: walker_mesh,
+            material: materials.add(Tailwind::RED400.into()),
+            transform: Transform::from_translation(Vec3::new(30., 1.0, 30.)),
+            ..Default::default()
+        })
+        .with(walker::Walker::default())
+        .with_bundle(UnitBundle {
+            unit: Unit {
+                speed: 0.1,
+                social_distance: 10.,
+                ..Default::default()
+            },
+            ..UnitBundle::default()
+        });
 }
 
 fn create_walker(
@@ -115,7 +132,13 @@ fn create_walker(
             ..Default::default()
         })
         .with(walker::Walker::default())
-        .with_bundle(UnitBundle::new(camera_entity));
+        .with_bundle(UnitBundle {
+            unit: Unit {
+                speed: 0.1,
+                ..Default::default()
+            },
+            ..UnitBundle::new(camera_entity)
+        });
 }
 
 fn create_drone(
@@ -136,5 +159,11 @@ fn create_drone(
             ..Default::default()
         })
         .with(drone::Drone::default())
-        .with_bundle(UnitBundle::new(camera_entity));
+        .with_bundle(UnitBundle {
+            unit: Unit {
+                speed: 0.3,
+                ..Default::default()
+            },
+            ..UnitBundle::new(camera_entity)
+        });
 }

@@ -2,19 +2,13 @@ use crate::systems::unit::{TargetPosition, Unit};
 use bevy::{prelude::*, render::camera::Camera};
 use bevy_mod_picking::*;
 
+#[derive(Default)]
 pub struct CanHaveCamera {
     translation_offset: Vec3,
     pub rotation_offset: Quat,
     camera_entity: Option<Entity>,
 }
 impl CanHaveCamera {
-    pub fn new() -> Self {
-        Self {
-            translation_offset: Vec3::zero(),
-            rotation_offset: Quat::identity(),
-            camera_entity: None,
-        }
-    }
     pub fn new_with_camera(camera_entity: Entity) -> Self {
         Self {
             translation_offset: Vec3::zero(),
