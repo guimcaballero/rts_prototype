@@ -1,7 +1,7 @@
 use crate::bundles::*;
 use crate::helpers::shapes::*;
 use crate::systems::{
-    drone, enemy,
+    attack, drone, enemy,
     selection::{DragSelectionRectangle, Selectable},
     unit::*,
     walker,
@@ -57,8 +57,8 @@ pub fn setup(
         });
 
     let walker_mesh = meshes.add(Mesh::from(shape::Cube { size: 1.0 }));
-    for i in 0..5 {
-        for j in 0..5 {
+    for i in 0..1 {
+        for j in 0..1 {
             create_walker(
                 &mut commands,
                 walker_mesh,
@@ -122,6 +122,7 @@ fn create_walker(
             ..Default::default()
         })
         .with(walker::Walker::default())
+        .with(attack::Ranged::default())
         .with(Selectable::default())
         .with_bundle(UnitBundle {
             unit: Unit {

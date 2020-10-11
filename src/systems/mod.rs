@@ -1,4 +1,6 @@
+pub mod attack;
 pub mod axes;
+pub mod bullet;
 pub mod camera;
 pub mod debug;
 pub mod drone;
