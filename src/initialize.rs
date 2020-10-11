@@ -88,23 +88,6 @@ pub fn setup(
         Some(camera_entity),
         Vec3::new(-25.0, 60.0, 0.0),
     );
-
-    commands
-        .spawn(PbrComponents {
-            mesh: walker_mesh,
-            material: materials.add(Tailwind::RED400.into()),
-            transform: Transform::from_translation(Vec3::new(30., 1.0, 30.)),
-            ..Default::default()
-        })
-        .with(Faction::new(Factions::Aliens))
-        .with_bundle(UnitBundle {
-            unit: Unit {
-                speed: 0.1,
-                social_distance: 10.,
-                ..Default::default()
-            },
-            ..UnitBundle::default()
-        });
 }
 
 fn create_walker(
