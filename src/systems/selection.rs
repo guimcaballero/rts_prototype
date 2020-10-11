@@ -4,9 +4,41 @@ use bevy::prelude::*;
 use bevy_contrib_colors::*;
 use bevy_mod_picking::*;
 
-#[derive(Default)]
 pub struct Selectable {
     pub selected: bool,
+    pub circle: Entity,
+}
+
+impl Selectable {
+    pub fn new(
+        commands: &mut Commands,
+        mesh: Handle<Mesh>,
+        material: Handle<ColorMaterial>,
+    ) -> Self {
+        // TODO Move the mesh and material thingy outside so we only add it once
+        let circle = commands
+            .spawn(SpriteComponents {
+                material,
+                mesh,
+                sprite: Sprite {
+                    size: Vec2::new(1.0, 1.0),
+                    ..Default::default()
+                },
+                draw: Draw {
+                    is_visible: false,
+                    ..Default::default()
+                },
+                transform: Transform::from_translation(Vec3::new(0.0, 0.1, 0.0)).with_scale(0.03),
+                ..Default::default()
+            })
+            .with(SelectionCircle)
+            .current_entity()
+            .unwrap();
+        Self {
+            selected: false,
+            circle,
+        }
+    }
 }
 
 /// Selects units
@@ -50,8 +82,7 @@ impl Default for SelectionState {
     }
 }
 
-pub struct DragSelectionRectangle;
-
+struct DragSelectionRectangle;
 fn drag_select(
     mut selection_state: ResMut<SelectionState>,
     pick_state: Res<PickState>,
@@ -113,35 +144,98 @@ fn drag_select(
     }
 }
 
+fn create_drag_rectangle(
+    mut commands: Commands,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut color_materials: ResMut<Assets<ColorMaterial>>,
+) {
+    // Drag Selection rectangle
+    commands
+        .spawn(SpriteComponents {
+            material: color_materials.add(Color::rgba(0.0, 0.0, 0.8, 0.1).into()),
+            mesh: meshes.add(rectangle_mesh()),
+            sprite: Sprite {
+                size: Vec2::new(1.0, 1.0),
+                ..Default::default()
+            },
+            draw: Draw {
+                is_visible: false,
+                ..Default::default()
+            },
+            transform: Transform::from_translation(Vec3::new(0.0, 0.1, 0.0)),
+            ..Default::default()
+        })
+        .with(DragSelectionRectangle);
+}
+
 fn is_between_two_values(x: f32, a: f32, b: f32) -> bool {
     return (a < x && x < b) || (b < x && x < a);
 }
 
-/// Changes the color of a unit depending on it's selection status
-fn change_color_for_highlighted_units(
+struct SelectionCircle;
+fn move_circle_for_selected_units(
     pick_state: Res<PickState>,
-    mut materials: ResMut<Assets<StandardMaterial>>,
-    mut query: Query<(&Selectable, &Handle<StandardMaterial>, Entity)>,
+    resource: Res<SelectionCircleMaterial>,
+    mut query: Query<(&Selectable, &Transform, Entity)>,
+    circle_query: Query<(
+        &SelectionCircle,
+        &mut Draw,
+        &mut Transform,
+        &mut Handle<ColorMaterial>,
+    )>,
 ) {
-    for (selectable, material_handle, entity) in &mut query.iter() {
-        let current_color = &mut materials.get_mut(material_handle).unwrap().albedo;
+    for (selectable, transform, entity) in &mut query.iter() {
+        let mut is_hovered = false;
 
-        // Strong blue if selected, red if not
-        *current_color = if selectable.selected {
-            Tailwind::BLUE600
-        } else {
-            Tailwind::RED400
-        };
-
-        // If the mouse is over it, light blue
         if let Some(top_pick) = pick_state.top(PickGroup::default()) {
             let top_entity = top_pick.entity();
 
             if entity == top_entity {
-                *current_color = Tailwind::BLUE300;
+                is_hovered = true;
             }
         }
+
+        let mut draw = match circle_query.get_mut::<Draw>(selectable.circle) {
+            Ok(draw) => draw,
+            _ => continue,
+        };
+        let mut circle_transform = match circle_query.get_mut::<Transform>(selectable.circle) {
+            Ok(transform) => transform,
+            _ => continue,
+        };
+        let mut material_handle =
+            match circle_query.get_mut::<Handle<ColorMaterial>>(selectable.circle) {
+                Ok(material) => material,
+                _ => continue,
+            };
+
+        if is_hovered || selectable.selected {
+            draw.is_visible = true;
+            let translation = transform.translation();
+            circle_transform.set_translation(Vec3::new(translation.x(), 0.1, translation.z()));
+
+            *material_handle = if is_hovered {
+                resource.hover_material.unwrap()
+            } else {
+                resource.selected_material.unwrap()
+            };
+        } else {
+            draw.is_visible = false;
+        }
     }
+}
+
+#[derive(Default)]
+struct SelectionCircleMaterial {
+    selected_material: Option<Handle<ColorMaterial>>,
+    hover_material: Option<Handle<ColorMaterial>>,
+}
+fn init_selection_circle_material_resource(
+    mut resource: ResMut<SelectionCircleMaterial>,
+    mut materials: ResMut<Assets<ColorMaterial>>,
+) {
+    resource.selected_material = Some(materials.add(Tailwind::BLUE500.into()));
+    resource.hover_material = Some(materials.add(Tailwind::BLUE300.into()));
 }
 
 fn set_target_for_selected(
@@ -167,9 +261,12 @@ pub struct SelectionPlugin;
 impl Plugin for SelectionPlugin {
     fn build(&self, app: &mut AppBuilder) {
         app.init_resource::<SelectionState>()
+            .init_resource::<SelectionCircleMaterial>()
+            .add_startup_system(init_selection_circle_material_resource.system())
             .add_system(select_units.system())
             .add_system(drag_select.system())
+            .add_startup_system(create_drag_rectangle.system())
             .add_system(set_target_for_selected.system())
-            .add_system(change_color_for_highlighted_units.system());
+            .add_system(move_circle_for_selected_units.system());
     }
 }

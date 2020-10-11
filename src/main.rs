@@ -23,7 +23,6 @@ fn main() {
         .add_default_plugins()
         // .add_plugin(debug::DebugPlugin)
         .add_plugin(PickingPlugin)
-        .add_startup_system(initialize::setup.system())
         .add_plugin(drone::DronePlugin)
         .add_plugin(camera::CameraPlugin)
         .add_plugin(unit::UnitPlugin)
@@ -35,5 +34,6 @@ fn main() {
         .add_plugin(attack::AttackPlugin)
         .add_plugin(bullet::BulletPlugin)
         .add_plugin(health::HealthPlugin)
+        .add_startup_system(initialize::setup.system())
         .run();
 }

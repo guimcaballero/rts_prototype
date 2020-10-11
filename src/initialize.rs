@@ -1,12 +1,6 @@
 use crate::bundles::*;
 use crate::helpers::shapes::*;
-use crate::systems::{
-    attack, drone,
-    faction::*,
-    selection::{DragSelectionRectangle, Selectable},
-    unit::*,
-    walker,
-};
+use crate::systems::{attack, drone, faction::*, selection::Selectable, unit::*, walker};
 use bevy::{math::Quat, prelude::*};
 use bevy_contrib_colors::Tailwind;
 use bevy_mod_picking::*;
@@ -15,7 +9,6 @@ pub fn setup(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
-    _asset_server: Res<AssetServer>,
     mut color_materials: ResMut<Assets<ColorMaterial>>,
 ) {
     let camera_entity = commands
@@ -35,22 +28,6 @@ pub fn setup(
             ..Default::default()
         })
         .with(PickableMesh::default())
-        // Drag Selection rectangle
-        .spawn(SpriteComponents {
-            material: color_materials.add(Color::rgba(0.0, 0.0, 0.8, 0.1).into()),
-            mesh: meshes.add(rectangle_mesh()),
-            sprite: Sprite {
-                size: Vec2::new(1.0, 1.0),
-                ..Default::default()
-            },
-            draw: Draw {
-                is_visible: false,
-                ..Default::default()
-            },
-            transform: Transform::from_translation(Vec3::new(0.0, 0.1, 0.0)),
-            ..Default::default()
-        })
-        .with(DragSelectionRectangle)
         // light
         .spawn(LightComponents {
             transform: Transform::from_translation(Vec3::new(4.0, 8.0, 4.0)),
@@ -58,14 +35,19 @@ pub fn setup(
         });
 
     let walker_mesh = meshes.add(Mesh::from(shape::Cube { size: 1.0 }));
+    let circle_mesh = meshes.add(circle_mesh());
+    let circle_material = color_materials.add(Tailwind::BLUE500.into());
+    let material = materials.add(Tailwind::RED400.into());
     for i in 0..5 {
         for j in 0..5 {
             create_walker(
                 &mut commands,
                 walker_mesh,
-                materials.add(Tailwind::RED400.into()),
+                material,
                 None,
                 Vec3::new(i as f32 * 5.0 - 10.0, 1.0, j as f32 * 5.0 - 10.0),
+                circle_mesh,
+                circle_material,
             );
         }
     }
@@ -77,26 +59,33 @@ pub fn setup(
     create_drone(
         &mut commands,
         drone_mesh,
-        materials.add(Tailwind::RED400.into()),
+        material,
         None,
         Vec3::new(10.0, 20.0, 5.0),
+        circle_mesh,
+        circle_material,
     );
     create_drone(
         &mut commands,
         drone_mesh,
-        materials.add(Tailwind::RED400.into()),
+        material,
         Some(camera_entity),
         Vec3::new(-25.0, 60.0, 0.0),
+        circle_mesh,
+        circle_material,
     );
 }
 
 fn create_walker(
-    commands: &mut Commands,
+    mut commands: &mut Commands,
     mesh: Handle<Mesh>,
     material: Handle<StandardMaterial>,
     camera_entity: Option<Entity>,
     position: Vec3,
+    circle_mesh: Handle<Mesh>,
+    circle_material: Handle<ColorMaterial>,
 ) {
+    let selectable = Selectable::new(&mut commands, circle_mesh, circle_material);
     commands
         .spawn(PbrComponents {
             mesh,
@@ -107,7 +96,7 @@ fn create_walker(
         .with(walker::Walker::default())
         .with(attack::Ranged::default())
         .with(Faction::new(Factions::Player))
-        .with(Selectable::default())
+        .with(selectable)
         .with_bundle(UnitBundle {
             unit: Unit {
                 speed: 0.1,
@@ -118,12 +107,16 @@ fn create_walker(
 }
 
 fn create_drone(
-    commands: &mut Commands,
+    mut commands: &mut Commands,
     mesh: Handle<Mesh>,
     material: Handle<StandardMaterial>,
     camera_entity: Option<Entity>,
     position: Vec3,
+    circle_mesh: Handle<Mesh>,
+    circle_material: Handle<ColorMaterial>,
 ) {
+    let selectable = Selectable::new(&mut commands, circle_mesh, circle_material);
+
     commands
         .spawn(PbrComponents {
             mesh,
@@ -136,7 +129,7 @@ fn create_drone(
         })
         .with(drone::Drone::default())
         .with(Faction::new(Factions::Player))
-        .with(Selectable::default())
+        .with(selectable)
         .with_bundle(UnitBundle {
             unit: Unit {
                 speed: 0.3,

@@ -1,3 +1,4 @@
+use crate::systems::selection::Selectable;
 use bevy::prelude::*;
 
 pub struct Health {
@@ -6,13 +7,20 @@ pub struct Health {
 
 impl Default for Health {
     fn default() -> Self {
-        Self { health_value: 1 }
+        Self { health_value: 3 }
     }
 }
 
-fn remove_if_dead(mut commands: Commands, mut query: Query<(Mutated<Health>, Entity)>) {
-    for (health, entity) in &mut query.iter() {
+fn remove_if_dead(
+    mut commands: Commands,
+    mut query: Query<(Mutated<Health>, Entity, Option<&mut Selectable>)>,
+) {
+    for (health, entity, option_selectable) in &mut query.iter() {
         if health.health_value <= 0 {
+            // If it's a selectable, despawn it's circle too
+            if let Some(selectable) = option_selectable {
+                commands.despawn(selectable.circle);
+            }
             commands.despawn(entity);
         }
     }
