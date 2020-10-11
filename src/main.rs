@@ -1,6 +1,6 @@
 #[allow(unused_imports)]
 use crate::systems::{
-    attack, axes, bullet, camera, debug, drone, enemy, health, selection, target_indicator, unit,
+    aliens, attack, axes, bullet, camera, debug, drone, health, selection, target_indicator, unit,
     walker,
 };
 use bevy::prelude::*;
@@ -29,11 +29,11 @@ fn main() {
         .add_plugin(unit::UnitPlugin)
         .add_plugin(selection::SelectionPlugin)
         .add_plugin(walker::WalkerPlugin)
-        .add_plugin(health::HealthPlugin)
-        .add_plugin(enemy::EnemyPlugin)
+        .add_plugin(aliens::AliensPlugin)
         .add_plugin(axes::AxesPlugin)
         .add_plugin(target_indicator::TargetIndicatorPlugin)
         .add_plugin(attack::AttackPlugin)
         .add_plugin(bullet::BulletPlugin)
+        .add_plugin(health::HealthPlugin)
         .run();
 }

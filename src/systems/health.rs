@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 
 pub struct Health {
-    pub health_value: u16,
+    pub health_value: i16,
 }
 
 impl Default for Health {
@@ -10,7 +10,7 @@ impl Default for Health {
     }
 }
 
-fn remove_if_dead(mut commands: Commands, mut query: Query<(Changed<Health>, Entity)>) {
+fn remove_if_dead(mut commands: Commands, mut query: Query<(Mutated<Health>, Entity)>) {
     for (health, entity) in &mut query.iter() {
         if health.health_value <= 0 {
             commands.despawn(entity);

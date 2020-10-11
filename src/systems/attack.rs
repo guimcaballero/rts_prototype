@@ -1,4 +1,4 @@
-use crate::systems::{bullet::*, enemy::*, unit::*};
+use crate::systems::{bullet::*, faction::*, unit::*};
 use bevy::{math::Vec3, prelude::*};
 
 pub struct Ranged {
@@ -26,16 +26,30 @@ fn shoot_against_enemies(
     mut commands: Commands,
     time: Res<Time>,
     bullet_resource: Res<BulletMeshResource>,
-    mut own_query: Query<Without<Enemy, (&Unit, &mut Ranged, &Transform)>>,
-    mut enemy_query: Query<(&Unit, &Enemy, &Transform)>,
+    mut ranged_query: Query<(&Unit, &mut Ranged, &Transform, &Faction)>,
+    // This other query is so we also get all the units that aren't ranged
+    mut others_query: Query<(&Unit, &Transform, &Faction)>,
 ) {
-    for (_, mut ranged, transform) in &mut own_query.iter() {
+    let mut unit_positions = Vec::new();
+    for (_, _, transform, faction) in &mut ranged_query.iter() {
+        unit_positions.push((transform.translation(), faction.faction));
+    }
+    for (_, transform, faction) in &mut others_query.iter() {
+        unit_positions.push((transform.translation(), faction.faction));
+    }
+
+    for (_, mut ranged, transform, faction) in &mut ranged_query.iter() {
         let translation = transform.translation();
         if ranged.can_shoot(time.seconds_since_startup) {
             // Get the closest enemy
             let mut enemy: Option<(Vec3, f32)> = None; // Option with (difference_vector, difference_distance)
-            for (_, _, enemy_transform) in &mut enemy_query.iter() {
-                let difference = translation - enemy_transform.translation();
+            for (enemy_transform, enemy_faction) in &unit_positions {
+                // Skip units in same faction
+                if *enemy_faction == faction.faction {
+                    continue;
+                }
+
+                let difference = translation - *enemy_transform;
                 let difference_distance = difference.length();
 
                 // If it's in range, we check if it's closer or the first enemy
@@ -55,8 +69,10 @@ fn shoot_against_enemies(
                 Bullet::new(
                     &mut commands,
                     &bullet_resource,
+                    &time,
                     translation,
                     -vector.normalize(),
+                    faction.faction,
                 );
 
                 ranged.last_attack = time.seconds_since_startup;
