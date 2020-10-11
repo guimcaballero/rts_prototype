@@ -143,6 +143,9 @@ fn drag_select(
         }
     }
 }
+fn is_between_two_values(x: f32, a: f32, b: f32) -> bool {
+    (a < x && x < b) || (b < x && x < a)
+}
 
 fn create_drag_rectangle(
     mut commands: Commands,
@@ -166,10 +169,6 @@ fn create_drag_rectangle(
             ..Default::default()
         })
         .with(DragSelectionRectangle);
-}
-
-fn is_between_two_values(x: f32, a: f32, b: f32) -> bool {
-    return (a < x && x < b) || (b < x && x < a);
 }
 
 struct SelectionCircle;

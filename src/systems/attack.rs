@@ -66,7 +66,7 @@ fn shoot_against_enemies(
 
             // If there is a closest enemy, we shoot
             if let Some((vector, _)) = enemy {
-                Bullet::new(
+                Bullet::spawn(
                     &mut commands,
                     &bullet_resource,
                     &time,

@@ -25,7 +25,7 @@ impl TargetPosition {
             pos.set_y(vec.y());
             pos.set_z(vec.z());
         } else {
-            self.pos = Some(vec.clone());
+            self.pos = Some(*vec);
         }
     }
 }

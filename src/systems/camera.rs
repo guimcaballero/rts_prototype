@@ -53,7 +53,7 @@ fn reset_unit_target_if_it_has_camera(
     )>,
 ) {
     for (can_have_camera, mut target, mut selectable, mut draw) in &mut query.iter() {
-        if let Some(_) = can_have_camera.camera_entity {
+        if can_have_camera.camera_entity.is_some() {
             target.pos = None;
             selectable.selected = false;
             draw.is_visible = false;

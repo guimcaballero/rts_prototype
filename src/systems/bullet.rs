@@ -11,7 +11,7 @@ pub struct Bullet {
     pub should_despawn_at: f64,
 }
 impl Bullet {
-    pub fn new(
+    pub fn spawn(
         commands: &mut Commands,
         resource: &BulletMeshResource,
         time: &Time,
