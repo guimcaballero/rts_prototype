@@ -22,8 +22,8 @@ impl Bullet {
         commands
             .spawn(PbrComponents {
                 // TODO We should deal with this being None
-                mesh: resource.mesh.unwrap(),
-                material: resource.material.unwrap(),
+                mesh: resource.mesh,
+                material: resource.material,
                 transform: Transform::from_translation(origin),
                 ..Default::default()
             })
@@ -79,29 +79,29 @@ fn bullet_collision(
     }
 }
 
-#[derive(Default)]
 pub struct BulletMeshResource {
-    mesh: Option<Handle<Mesh>>,
-    material: Option<Handle<StandardMaterial>>,
+    mesh: Handle<Mesh>,
+    material: Handle<StandardMaterial>,
 }
 
-fn init_bullet_mesh_resource(
-    mut resource: ResMut<BulletMeshResource>,
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<StandardMaterial>>,
-) {
-    resource.mesh = Some(meshes.add(Mesh::from(shape::Icosphere {
-        subdivisions: 4,
-        radius: 0.3,
-    })));
-    resource.material = Some(materials.add(Tailwind::BLACK.into()));
+impl FromResources for BulletMeshResource {
+    fn from_resources(resources: &Resources) -> Self {
+        let mut meshes = resources.get_mut::<Assets<Mesh>>().unwrap();
+        let mut materials = resources.get_mut::<Assets<StandardMaterial>>().unwrap();
+        BulletMeshResource {
+            mesh: meshes.add(Mesh::from(shape::Icosphere {
+                subdivisions: 4,
+                radius: 0.3,
+            })),
+            material: materials.add(Tailwind::BLACK.into()),
+        }
+    }
 }
 
 pub struct BulletPlugin;
 impl Plugin for BulletPlugin {
     fn build(&self, app: &mut AppBuilder) {
         app.init_resource::<BulletMeshResource>()
-            .add_startup_system(init_bullet_mesh_resource.system())
             .add_system(move_bullet.system())
             .add_system(kill_after_lifetime_over.system())
             .add_system(bullet_collision.system());

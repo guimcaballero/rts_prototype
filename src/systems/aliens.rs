@@ -22,8 +22,8 @@ fn create_random_aliens(
         );
         commands
             .spawn(PbrComponents {
-                mesh: resource.mesh.unwrap(),
-                material: resource.material.unwrap(),
+                mesh: resource.mesh,
+                material: resource.material,
                 transform: Transform::from_translation(position),
                 ..Default::default()
             })
@@ -38,18 +38,20 @@ fn create_random_aliens(
     }
 }
 
-#[derive(Default)]
 struct AlienMeshResource {
-    mesh: Option<Handle<Mesh>>,
-    material: Option<Handle<StandardMaterial>>,
+    mesh: Handle<Mesh>,
+    material: Handle<StandardMaterial>,
 }
-fn init_alien_mesh_resource(
-    mut resource: ResMut<AlienMeshResource>,
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<StandardMaterial>>,
-) {
-    resource.mesh = Some(meshes.add(Mesh::from(shape::Cube { size: 1.0 })));
-    resource.material = Some(materials.add(Tailwind::PURPLE400.into()));
+
+impl FromResources for AlienMeshResource {
+    fn from_resources(resources: &Resources) -> Self {
+        let mut meshes = resources.get_mut::<Assets<Mesh>>().unwrap();
+        let mut materials = resources.get_mut::<Assets<StandardMaterial>>().unwrap();
+        AlienMeshResource {
+            mesh: meshes.add(Mesh::from(shape::Cube { size: 1.0 })),
+            material: materials.add(Tailwind::PURPLE400.into()),
+        }
+    }
 }
 
 pub struct AliensPlugin;
@@ -57,7 +59,6 @@ impl Plugin for AliensPlugin {
     fn build(&self, app: &mut AppBuilder) {
         app.init_resource::<AlienMeshResource>()
             .add_resource(SpawnTimer(Timer::from_seconds(3.0, true)))
-            .add_startup_system(init_alien_mesh_resource.system())
             .add_system(create_random_aliens.system());
     }
 }

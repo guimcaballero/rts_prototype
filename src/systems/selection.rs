@@ -15,7 +15,6 @@ impl Selectable {
         mesh: Handle<Mesh>,
         material: Handle<ColorMaterial>,
     ) -> Self {
-        // TODO Move the mesh and material thingy outside so we only add it once
         let circle = commands
             .spawn(SpriteComponents {
                 material,
@@ -165,7 +164,7 @@ fn create_drag_rectangle(
                 is_visible: false,
                 ..Default::default()
             },
-            transform: Transform::from_translation(Vec3::new(0.0, 0.1, 0.0)),
+            transform: Transform::from_translation(Vec3::new(0.0, 0.05, 0.0)),
             ..Default::default()
         })
         .with(DragSelectionRectangle);
@@ -214,9 +213,9 @@ fn move_circle_for_selected_units(
             circle_transform.set_translation(Vec3::new(translation.x(), 0.1, translation.z()));
 
             *material_handle = if is_hovered {
-                resource.hover_material.unwrap()
+                resource.hover_material
             } else {
-                resource.selected_material.unwrap()
+                resource.selected_material
             };
         } else {
             draw.is_visible = false;
@@ -224,17 +223,18 @@ fn move_circle_for_selected_units(
     }
 }
 
-#[derive(Default)]
 struct SelectionCircleMaterial {
-    selected_material: Option<Handle<ColorMaterial>>,
-    hover_material: Option<Handle<ColorMaterial>>,
+    selected_material: Handle<ColorMaterial>,
+    hover_material: Handle<ColorMaterial>,
 }
-fn init_selection_circle_material_resource(
-    mut resource: ResMut<SelectionCircleMaterial>,
-    mut materials: ResMut<Assets<ColorMaterial>>,
-) {
-    resource.selected_material = Some(materials.add(Tailwind::BLUE500.into()));
-    resource.hover_material = Some(materials.add(Tailwind::BLUE300.into()));
+impl FromResources for SelectionCircleMaterial {
+    fn from_resources(resources: &Resources) -> Self {
+        let mut materials = resources.get_mut::<Assets<ColorMaterial>>().unwrap();
+        SelectionCircleMaterial {
+            selected_material: materials.add(Tailwind::BLUE500.into()),
+            hover_material: materials.add(Tailwind::BLUE300.into()),
+        }
+    }
 }
 
 fn set_target_for_selected(
@@ -261,7 +261,6 @@ impl Plugin for SelectionPlugin {
     fn build(&self, app: &mut AppBuilder) {
         app.init_resource::<SelectionState>()
             .init_resource::<SelectionCircleMaterial>()
-            .add_startup_system(init_selection_circle_material_resource.system())
             .add_system(select_units.system())
             .add_system(drag_select.system())
             .add_startup_system(create_drag_rectangle.system())
