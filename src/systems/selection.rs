@@ -1,5 +1,5 @@
 use crate::helpers::shapes::*;
-use crate::systems::unit::TargetPosition;
+use crate::systems::{ui::HoveringUI, unit::TargetPosition};
 use bevy::prelude::*;
 use bevy_contrib_colors::*;
 use bevy_mod_picking::*;
@@ -43,10 +43,15 @@ impl Selectable {
 /// Selects units
 fn select_units(
     pick_state: Res<PickState>,
+    hovering_ui: Res<HoveringUI>,
     keyboard_input: Res<Input<KeyCode>>,
     mouse_button_inputs: Res<Input<MouseButton>>,
     mut query: Query<&mut Selectable>,
 ) {
+    if hovering_ui.0 {
+        return;
+    }
+
     // Only run when control is not pressed and we just clicked the left button
     if !mouse_button_inputs.just_pressed(MouseButton::Left) {
         return;
@@ -85,11 +90,16 @@ struct DragSelectionRectangle;
 fn drag_select(
     mut selection_state: ResMut<SelectionState>,
     pick_state: Res<PickState>,
+    hovering_ui: Res<HoveringUI>,
     mouse_button_inputs: Res<Input<MouseButton>>,
     mut meshes: ResMut<Assets<Mesh>>,
     mut query: Query<(&mut Selectable, &Transform)>,
     mut drag_selection_rectangle: Query<(&Handle<Mesh>, &DragSelectionRectangle, &mut Draw)>,
 ) {
+    if hovering_ui.0 {
+        return;
+    }
+
     // If we start clicking, save the initial_position
     if mouse_button_inputs.just_pressed(MouseButton::Left) {
         if let Some(top_pick) = pick_state.top(PickGroup::default()) {
@@ -173,6 +183,7 @@ fn create_drag_rectangle(
 struct SelectionCircle;
 fn move_circle_for_selected_units(
     pick_state: Res<PickState>,
+    hovering_ui: Res<HoveringUI>,
     resource: Res<SelectionCircleMaterial>,
     mut query: Query<(&Selectable, &Transform, Entity)>,
     circle_query: Query<(
@@ -185,11 +196,13 @@ fn move_circle_for_selected_units(
     for (selectable, transform, entity) in &mut query.iter() {
         let mut is_hovered = false;
 
-        if let Some(top_pick) = pick_state.top(PickGroup::default()) {
-            let top_entity = top_pick.entity();
+        if !hovering_ui.0 {
+            if let Some(top_pick) = pick_state.top(PickGroup::default()) {
+                let top_entity = top_pick.entity();
 
-            if entity == top_entity {
-                is_hovered = true;
+                if entity == top_entity {
+                    is_hovered = true;
+                }
             }
         }
 

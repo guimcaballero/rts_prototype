@@ -32,7 +32,8 @@ pub fn setup(
         .spawn(LightComponents {
             transform: Transform::from_translation(Vec3::new(4.0, 8.0, 4.0)),
             ..Default::default()
-        });
+        })
+        .spawn(UiCameraComponents::default());
 
     let walker_mesh = meshes.add(Mesh::from(shape::Cube { size: 1.0 }));
     let circle_mesh = meshes.add(circle_mesh());

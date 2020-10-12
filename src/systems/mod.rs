@@ -9,5 +9,6 @@ pub mod faction;
 pub mod health;
 pub mod selection;
 pub mod target_indicator;
+pub mod ui;
 pub mod unit;
 pub mod walker;
