@@ -72,12 +72,12 @@ fn wasd_walk_for_camera_holder(
 
         let delta_friction = friction * time.delta_seconds;
 
-        options.velocity = if (options.velocity + delta_friction).sign() != options.velocity.sign()
-        {
-            Vec3::zero()
-        } else {
-            options.velocity + delta_friction
-        };
+        options.velocity =
+            if (options.velocity + delta_friction).signum() != options.velocity.signum() {
+                Vec3::zero()
+            } else {
+                options.velocity + delta_friction
+            };
 
         transform.translate(options.velocity);
     }

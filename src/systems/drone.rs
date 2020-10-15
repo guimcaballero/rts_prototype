@@ -85,12 +85,12 @@ fn drone_movement_system(
 
         let delta_friction = friction * time.delta_seconds;
 
-        options.velocity = if (options.velocity + delta_friction).sign() != options.velocity.sign()
-        {
-            Vec3::zero()
-        } else {
-            options.velocity + delta_friction
-        };
+        options.velocity =
+            if (options.velocity + delta_friction).signum() != options.velocity.signum() {
+                Vec3::zero()
+            } else {
+                options.velocity + delta_friction
+            };
 
         // If unit is on the floor, we don't allow going down
         if translation.y() <= 1.01 && options.velocity.y() < 0. {
