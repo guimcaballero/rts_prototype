@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use bevy_mod_picking::*;
 
 fn create_ui(
     mut commands: Commands,
@@ -60,10 +61,9 @@ fn button_system(
 }
 
 #[derive(Default)]
-pub struct HoveringUI(pub bool);
 struct PickingBlocker;
 fn block_picking_under_blockers(
-    mut hovering_ui: ResMut<HoveringUI>,
+    mut pick_state: ResMut<PickState>,
     mut interaction_query: Query<(&Button, &Interaction, &PickingBlocker)>,
 ) {
     let mut some_is_hovered = false;
@@ -75,14 +75,13 @@ fn block_picking_under_blockers(
             Interaction::None => {}
         }
     }
-    hovering_ui.0 = some_is_hovered;
+    pick_state.enabled = !some_is_hovered;
 }
 
 pub struct UIPlugin;
 impl Plugin for UIPlugin {
     fn build(&self, app: &mut AppBuilder) {
-        app.init_resource::<HoveringUI>()
-            .add_system(block_picking_under_blockers.system())
+        app.add_system(block_picking_under_blockers.system())
             .add_startup_system(create_ui.system())
             .add_system(button_system.system());
     }
