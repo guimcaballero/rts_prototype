@@ -43,12 +43,12 @@ pub fn setup(
         for j in 0..5 {
             create_walker(
                 &mut commands,
-                walker_mesh,
-                material,
+                walker_mesh.clone(),
+                material.clone(),
                 None,
                 Vec3::new(i as f32 * 5.0 - 10.0, 1.0, j as f32 * 5.0 - 10.0),
-                circle_mesh,
-                circle_material,
+                circle_mesh.clone(),
+                circle_material.clone(),
             );
         }
     }
@@ -59,12 +59,12 @@ pub fn setup(
     }));
     create_drone(
         &mut commands,
-        drone_mesh,
-        material,
+        drone_mesh.clone(),
+        material.clone(),
         None,
         Vec3::new(10.0, 20.0, 5.0),
-        circle_mesh,
-        circle_material,
+        circle_mesh.clone(),
+        circle_material.clone(),
     );
     create_drone(
         &mut commands,
@@ -122,7 +122,7 @@ fn create_drone(
         .spawn(PbrComponents {
             mesh,
             material,
-            transform: Transform::new(Mat4::from_rotation_translation(
+            transform: Transform::from_matrix(Mat4::from_rotation_translation(
                 Quat::from_xyzw(-0.3, -0.5, -0.3, 0.5).normalize(),
                 position,
             )),

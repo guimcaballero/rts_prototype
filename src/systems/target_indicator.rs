@@ -19,7 +19,7 @@ fn show_target_indicator(
             selections_with_target_exist = true;
 
             for (_, mut transform, _) in &mut indicator_query.iter() {
-                transform.set_translation(Vec3::new(target_position.x(), 0.3, target_position.z()));
+                transform.translation = Vec3::new(target_position.x(), 0.3, target_position.z());
             }
         }
     }
@@ -47,7 +47,7 @@ pub fn create_target_indicator(
                 is_visible: false,
                 ..Default::default()
             },
-            transform: Transform::from_scale(0.01),
+            transform: Transform::from_scale(Vec3::splat(0.01)),
             ..Default::default()
         })
         .with(TargetIndicator);

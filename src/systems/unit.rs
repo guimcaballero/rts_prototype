@@ -35,11 +35,11 @@ fn unit_movement(mut query: Query<(&Unit, &mut TargetPosition, &mut Transform, E
     // TODO Do something to divide by space or something
     let mut unit_positions = Vec::new();
     for (unit, _, transform, entity) in &mut query.iter() {
-        unit_positions.push((entity, transform.translation(), unit.social_distance));
+        unit_positions.push((entity, transform.translation, unit.social_distance));
     }
 
     for (unit, mut target, mut transform, entity) in &mut query.iter() {
-        let translation = transform.translation();
+        let translation = transform.translation;
         let mut velocity = Vec3::zero();
 
         // Keep a distance to other units
@@ -64,7 +64,7 @@ fn unit_movement(mut query: Query<(&Unit, &mut TargetPosition, &mut Transform, E
 
         // Move towards target
         if let Some(target_pos) = target.pos {
-            let mut direction = target_pos - transform.translation();
+            let mut direction = target_pos - transform.translation;
             direction.set_y(0.0);
 
             if direction.length() > 0.3 + units_nearby as f32 {
@@ -81,7 +81,7 @@ fn unit_movement(mut query: Query<(&Unit, &mut TargetPosition, &mut Transform, E
             velocity.set_y(0.);
         }
 
-        transform.translate(velocity);
+        transform.translation += velocity;
     }
 }
 

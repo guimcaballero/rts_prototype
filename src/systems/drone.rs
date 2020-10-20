@@ -58,13 +58,13 @@ fn drone_movement_system(
 
         let any_button_down = axis_h != 0.0 || axis_v != 0.0 || axis_float != 0.0;
 
-        let rotation = transform.rotation();
+        let rotation = transform.rotation;
         let mut accel: Vec3 = ((strafe_vector(&rotation) * axis_h)
             + (forward_walk_vector(&rotation) * axis_v)
             + (Vec3::unit_y() * axis_float))
             * options.speed;
 
-        let translation = transform.translation();
+        let translation = transform.translation;
         let y = translation.y();
         if y <= 10. {
             accel += Vec3::unit_y() * (10. - y).abs();
@@ -97,7 +97,7 @@ fn drone_movement_system(
             options.velocity.set_y(0.);
         }
 
-        transform.translate(options.velocity);
+        transform.translation += options.velocity;
     }
 }
 
@@ -140,10 +140,8 @@ fn drone_mouse_rotation_system(
         let yaw_radians = options.yaw.to_radians();
         let pitch_radians = options.pitch.to_radians();
 
-        transform.set_rotation(
-            Quat::from_axis_angle(Vec3::unit_y(), yaw_radians)
-                * Quat::from_axis_angle(-Vec3::unit_x(), pitch_radians),
-        );
+        transform.rotation = Quat::from_axis_angle(Vec3::unit_y(), yaw_radians)
+            * Quat::from_axis_angle(-Vec3::unit_x(), pitch_radians);
     }
 }
 

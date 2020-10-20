@@ -22,8 +22,8 @@ impl Bullet {
         commands
             .spawn(PbrComponents {
                 // TODO We should deal with this being None
-                mesh: resource.mesh,
-                material: resource.material,
+                mesh: resource.mesh.clone(),
+                material: resource.material.clone(),
                 transform: Transform::from_translation(origin),
                 ..Default::default()
             })
@@ -37,7 +37,7 @@ impl Bullet {
 
 fn move_bullet(time: Res<Time>, mut query: Query<(&Bullet, &mut Transform)>) {
     for (bullet, mut transform) in &mut query.iter() {
-        transform.translate(BULLET_SPEED * bullet.direction * time.delta_seconds);
+        transform.translation += BULLET_SPEED * bullet.direction * time.delta_seconds;
     }
 }
 
@@ -59,7 +59,7 @@ fn bullet_collision(
     mut unit_query: Query<(&Unit, &Transform, &mut Health, &Faction)>,
 ) {
     for (_, bullet_transform, faction, bullet_entity) in &mut bullet_query.iter() {
-        let bullet_translation = bullet_transform.translation();
+        let bullet_translation = bullet_transform.translation;
 
         for (_, enemy_transform, mut health, enemy_faction) in &mut unit_query.iter() {
             // Skip units in same faction
@@ -67,7 +67,7 @@ fn bullet_collision(
                 continue;
             }
 
-            let enemy_translation = enemy_transform.translation();
+            let enemy_translation = enemy_transform.translation;
             let distance = (bullet_translation - enemy_translation).length();
 
             if distance < 1.0 {

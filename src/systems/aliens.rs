@@ -22,8 +22,8 @@ fn create_random_aliens(
         );
         commands
             .spawn(PbrComponents {
-                mesh: resource.mesh,
-                material: resource.material,
+                mesh: resource.mesh.clone(),
+                material: resource.material.clone(),
                 transform: Transform::from_translation(position),
                 ..Default::default()
             })

@@ -27,7 +27,11 @@ impl Selectable {
                     is_visible: false,
                     ..Default::default()
                 },
-                transform: Transform::from_translation(Vec3::new(0.0, 0.1, 0.0)).with_scale(0.03),
+                transform: Transform {
+                    translation: Vec3::new(0.0, 0.1, 0.0),
+                    scale: Vec3::splat(0.03),
+                    ..Default::default()
+                },
                 ..Default::default()
             })
             .with(SelectionCircle)
@@ -130,11 +134,11 @@ fn drag_select(
             for (mut selectable, transform) in &mut query.iter() {
                 // Mark the units as selected if they are inside the rectangle
                 selectable.selected = is_between_two_values(
-                    transform.translation().x(),
+                    transform.translation.x(),
                     initial_position.x(),
                     final_position.x(),
                 ) && is_between_two_values(
-                    transform.translation().z(),
+                    transform.translation.z(),
                     initial_position.z(),
                     final_position.z(),
                 );
@@ -209,13 +213,13 @@ fn move_circle_for_selected_units(
 
         if is_hovered || selectable.selected {
             draw.is_visible = true;
-            let translation = transform.translation();
-            circle_transform.set_translation(Vec3::new(translation.x(), 0.1, translation.z()));
+            let translation = transform.translation;
+            circle_transform.translation = Vec3::new(translation.x(), 0.1, translation.z());
 
             *material_handle = if is_hovered {
-                resource.hover_material
+                resource.hover_material.clone()
             } else {
-                resource.selected_material
+                resource.selected_material.clone()
             };
         } else {
             draw.is_visible = false;

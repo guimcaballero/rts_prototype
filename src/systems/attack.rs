@@ -32,14 +32,14 @@ fn shoot_against_enemies(
 ) {
     let mut unit_positions = Vec::new();
     for (_, _, transform, faction) in &mut ranged_query.iter() {
-        unit_positions.push((transform.translation(), faction.faction));
+        unit_positions.push((transform.translation, faction.faction));
     }
     for (_, transform, faction) in &mut others_query.iter() {
-        unit_positions.push((transform.translation(), faction.faction));
+        unit_positions.push((transform.translation, faction.faction));
     }
 
     for (_, mut ranged, transform, faction) in &mut ranged_query.iter() {
-        let translation = transform.translation();
+        let translation = transform.translation;
         if ranged.can_shoot(time.seconds_since_startup) {
             // Get the closest enemy
             let mut enemy: Option<(Vec3, f32)> = None; // Option with (difference_vector, difference_distance)

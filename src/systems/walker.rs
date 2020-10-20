@@ -52,7 +52,7 @@ fn wasd_walk_for_camera_holder(
 
         let any_button_down = axis_h != 0.0 || axis_v != 0.0;
 
-        let rotation = transform.rotation();
+        let rotation = transform.rotation;
         let accel: Vec3 = ((strafe_vector(&rotation) * axis_h)
             + (forward_walk_vector(&rotation) * axis_v))
             * options.speed;
@@ -79,7 +79,7 @@ fn wasd_walk_for_camera_holder(
                 options.velocity + delta_friction
             };
 
-        transform.translate(options.velocity);
+        transform.translation += options.velocity;
     }
 }
 
@@ -122,7 +122,7 @@ fn walker_mouse_rotation_system(
         let yaw_radians = options.yaw.to_radians();
         let pitch_radians = options.pitch.to_radians();
 
-        transform.set_rotation(Quat::from_axis_angle(Vec3::unit_y(), yaw_radians));
+        transform.rotation = Quat::from_axis_angle(Vec3::unit_y(), yaw_radians);
         can_have_camera.rotation_offset = Quat::from_axis_angle(-Vec3::unit_x(), pitch_radians);
     }
 }

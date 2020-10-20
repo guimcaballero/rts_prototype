@@ -15,7 +15,7 @@ fn update_debug_cursor_position(
         dbg!(top_pick);
         for (_, mut transform, mut draw) in &mut query.iter() {
             if keyboard_input.pressed(KeyCode::P) {
-                transform.set_translation(pos);
+                transform.translation = pos;
                 draw.is_visible = true;
             } else {
                 draw.is_visible = false;

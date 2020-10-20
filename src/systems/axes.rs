@@ -202,13 +202,13 @@ fn axes_system(
     let mut axes_temp = axes_query.iter();
     let (_, mut axes_transform) = axes_temp.iter().next().unwrap();
 
-    let view_matrix = camera_transform.value();
+    let view_matrix = camera_transform.compute_matrix();
     let projection_matrix = camera.projection_matrix;
     let world_pos: Vec4 =
-        (*view_matrix * projection_matrix.inverse()).mul_vec4(Vec4::new(0.7, -0.8, 0.3, 1.0));
+        (view_matrix * projection_matrix.inverse()).mul_vec4(Vec4::new(0.7, -0.8, 0.3, 1.0));
     let position: Vec3 = (world_pos / world_pos.w()).truncate().into();
 
-    axes_transform.set_translation(position);
+    axes_transform.translation = position;
 }
 
 fn axes_setup(
@@ -234,7 +234,7 @@ fn axes_setup(
     commands
         .spawn((
             GlobalTransform::identity(),
-            Transform::from_scale(0.1f32),
+            Transform::from_scale(Vec3::splat(0.1)),
             AxesTag,
         ))
         .with_children(|axes_root| {
@@ -246,8 +246,8 @@ fn axes_setup(
                 .with_children(|axis_root| {
                     axis_root
                         .spawn(PbrComponents {
-                            material: red,
-                            mesh: cone_mesh,
+                            material: red.clone(),
+                            mesh: cone_mesh.clone(),
                             transform: Transform::from_translation(Vec3::new(
                                 0.0f32, 0.85f32, 0.0f32,
                             )),
@@ -255,7 +255,7 @@ fn axes_setup(
                         })
                         .spawn(PbrComponents {
                             material: red,
-                            mesh: cylinder_mesh,
+                            mesh: cylinder_mesh.clone(),
                             ..Default::default()
                         });
                 })
@@ -263,8 +263,8 @@ fn axes_setup(
                 .with_children(|axis_root| {
                     axis_root
                         .spawn(PbrComponents {
-                            material: green,
-                            mesh: cone_mesh,
+                            material: green.clone(),
+                            mesh: cone_mesh.clone(),
                             transform: Transform::from_translation(Vec3::new(
                                 0.0f32, 0.85f32, 0.0f32,
                             )),
@@ -272,7 +272,7 @@ fn axes_setup(
                         })
                         .spawn(PbrComponents {
                             material: green,
-                            mesh: cylinder_mesh,
+                            mesh: cylinder_mesh.clone(),
                             ..Default::default()
                         });
                 })
@@ -283,7 +283,7 @@ fn axes_setup(
                 .with_children(|axis_root| {
                     axis_root
                         .spawn(PbrComponents {
-                            material: blue,
+                            material: blue.clone(),
                             mesh: cone_mesh,
                             transform: Transform::from_translation(Vec3::new(
                                 0.0f32, 0.85f32, 0.0f32,
