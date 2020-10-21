@@ -1,3 +1,4 @@
+use crate::systems::ability::{Ability, CurrentAbility};
 use bevy::prelude::*;
 use bevy_mod_picking::*;
 
@@ -9,7 +10,7 @@ fn create_ui(
     commands
         .spawn(ButtonComponents {
             style: Style {
-                size: Size::new(Val::Px(150.0), Val::Px(65.0)),
+                size: Size::new(Val::Px(250.0), Val::Px(65.0)),
                 justify_content: JustifyContent::Center,
                 align_items: AlignItems::Center,
 
@@ -25,10 +26,14 @@ fn create_ui(
             ..Default::default()
         })
         .with(PickingBlocker {})
+        .with(AbilityButton(box |mut ability| {
+            ability.ability = Ability::SwitchCamera;
+            println!("changed ability to Switch Camera");
+        }))
         .with_children(|parent| {
             parent.spawn(TextComponents {
                 text: Text {
-                    value: "Button".to_string(),
+                    value: "Switch control".to_string(),
                     font: asset_server.load("fonts/FiraSans-Bold.ttf"),
                     style: TextStyle {
                         font_size: 40.0,
@@ -40,22 +45,20 @@ fn create_ui(
         });
 }
 
+type AbilityChangeCallback = Box<dyn FnMut(ResMut<CurrentAbility>) -> () + Send + Sync>;
+
+struct AbilityButton(AbilityChangeCallback);
 fn button_system(
-    mut interaction_query: Query<(&Button, Mutated<Interaction>, &Children)>,
-    text_query: Query<&mut Text>,
+    ability: ResMut<CurrentAbility>,
+    mut interaction_query: Query<(&mut AbilityButton, Mutated<Interaction>)>,
 ) {
-    for (_button, interaction, children) in &mut interaction_query.iter() {
-        let mut text = text_query.get_mut::<Text>(children[0]).unwrap();
+    for (mut ability_button, interaction) in &mut interaction_query.iter() {
         match *interaction {
             Interaction::Clicked => {
-                text.value = "Press".to_string();
+                ability_button.0(ability);
+                return;
             }
-            Interaction::Hovered => {
-                text.value = "Hover".to_string();
-            }
-            Interaction::None => {
-                text.value = "Button".to_string();
-            }
+            _ => {}
         }
     }
 }

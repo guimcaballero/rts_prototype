@@ -1,4 +1,5 @@
 use crate::systems::{
+    ability::*,
     selection::Selectable,
     unit::{TargetPosition, Unit},
 };
@@ -66,12 +67,16 @@ fn reset_unit_target_if_it_has_camera(
 }
 
 fn switch_camera_to_entity(
+    mut ability: ResMut<CurrentAbility>,
     pick_state: Res<PickState>,
-    keyboard_input: Res<Input<KeyCode>>,
     mouse_button_inputs: Res<Input<MouseButton>>,
     mut query: Query<(&mut CanHaveCamera, &Unit)>,
 ) {
-    if !keyboard_input.pressed(KeyCode::M) || !mouse_button_inputs.just_pressed(MouseButton::Left) {
+    if ability.ability != Ability::SwitchCamera {
+        return;
+    }
+
+    if !mouse_button_inputs.just_pressed(MouseButton::Left) {
         return;
     }
 
@@ -98,6 +103,8 @@ fn switch_camera_to_entity(
             }
         }
     }
+
+    ability.ability = Ability::Select;
 }
 
 pub struct CameraPlugin;

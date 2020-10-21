@@ -1,7 +1,9 @@
+#![feature(box_syntax)]
+
 #[allow(unused_imports)]
 use crate::systems::{
-    aliens, attack, axes, bullet, camera, debug, drone, health, selection, target_indicator, ui,
-    unit, walker,
+    ability, aliens, attack, axes, bullet, camera, debug, drone, health, selection,
+    target_indicator, ui, unit, walker,
 };
 use bevy::prelude::*;
 use bevy_mod_picking::*;
@@ -35,6 +37,7 @@ fn main() {
         .add_plugin(bullet::BulletPlugin)
         .add_plugin(health::HealthPlugin)
         .add_plugin(ui::UIPlugin)
+        .add_plugin(ability::AbilityPlugin)
         .add_startup_system(initialize::setup.system())
         .run();
 }

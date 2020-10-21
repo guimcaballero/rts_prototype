@@ -1,5 +1,5 @@
 use crate::helpers::shapes::*;
-use crate::systems::unit::TargetPosition;
+use crate::systems::{ability::*, unit::TargetPosition};
 use bevy::prelude::*;
 use bevy_contrib_colors::*;
 use bevy_mod_picking::*;
@@ -46,11 +46,16 @@ impl Selectable {
 
 /// Selects units
 fn select_units(
+    ability: Res<CurrentAbility>,
     pick_state: Res<PickState>,
     keyboard_input: Res<Input<KeyCode>>,
     mouse_button_inputs: Res<Input<MouseButton>>,
     mut query: Query<&mut Selectable>,
 ) {
+    if ability.ability != Ability::Select {
+        return;
+    }
+
     // Only run when control is not pressed and we just clicked the left button
     if !mouse_button_inputs.just_pressed(MouseButton::Left) {
         return;
@@ -87,6 +92,7 @@ impl Default for SelectionState {
 
 struct DragSelectionRectangle;
 fn drag_select(
+    ability: Res<CurrentAbility>,
     mut selection_state: ResMut<SelectionState>,
     pick_state: Res<PickState>,
     mouse_button_inputs: Res<Input<MouseButton>>,
@@ -94,6 +100,10 @@ fn drag_select(
     mut query: Query<(&mut Selectable, &Transform)>,
     mut drag_selection_rectangle: Query<(&Handle<Mesh>, &DragSelectionRectangle, &mut Draw)>,
 ) {
+    if ability.ability != Ability::Select {
+        return;
+    }
+
     // If we start clicking, save the initial_position
     if mouse_button_inputs.just_pressed(MouseButton::Left) {
         if let Some(top_pick) = pick_state.top(PickGroup::default()) {

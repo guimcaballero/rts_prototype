@@ -1,3 +1,4 @@
+use crate::systems::ability::*;
 use bevy::prelude::*;
 use bevy_mod_picking::*;
 
@@ -12,7 +13,6 @@ fn update_debug_cursor_position(
     if let Some(top_pick) = pick_state.top(PickGroup::default()) {
         let pos = *top_pick.position();
 
-        dbg!(top_pick);
         for (_, mut transform, mut draw) in &mut query.iter() {
             if keyboard_input.pressed(KeyCode::P) {
                 transform.translation = pos;
@@ -43,10 +43,15 @@ fn setup_debug_cursor(
         .with(DebugCursor);
 }
 
+fn ability_debug(ability: Res<CurrentAbility>) {
+    println!("Current ability: {:?}", ability.ability);
+}
+
 pub struct DebugPlugin;
 impl Plugin for DebugPlugin {
     fn build(&self, app: &mut AppBuilder) {
         app.add_startup_system(setup_debug_cursor.system())
-            .add_system(update_debug_cursor_position.system());
+            .add_system(update_debug_cursor_position.system())
+            .add_system(ability_debug.system());
     }
 }
