@@ -1,6 +1,9 @@
 use crate::systems::{
+    drone::Drone,
+    faction::Faction,
     health::Health,
     unit::{TargetPosition, Unit},
+    walker::Walker,
 };
 use bevy::prelude::*;
 use bevy_mod_picking::*;
@@ -11,15 +14,15 @@ pub struct UnitBundle {
     pub health: Health,
     pub target_position: TargetPosition,
     pub pickable_mesh: PickableMesh,
+    pub faction: Faction,
 }
 
-impl UnitBundle {
-    pub fn new() -> Self {
-        Self {
-            unit: Unit::default(),
-            health: Health::default(),
-            target_position: TargetPosition::default(),
-            pickable_mesh: PickableMesh::default(),
-        }
-    }
+#[derive(Bundle, Default)]
+pub struct DroneBundle {
+    pub drone: Drone,
+}
+
+#[derive(Bundle, Default)]
+pub struct WalkerBundle {
+    pub walker: Walker,
 }

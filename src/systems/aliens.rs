@@ -27,14 +27,14 @@ fn create_random_aliens(
                 transform: Transform::from_translation(position),
                 ..Default::default()
             })
-            .with(Faction::new(Factions::Aliens))
-            .with(attack::Ranged::default())
             .with_bundle(UnitBundle {
                 target_position: TargetPosition {
                     pos: Some(Vec3::zero()),
                 },
+                faction: Faction::new(Factions::Aliens),
                 ..UnitBundle::default()
-            });
+            })
+            .with(attack::Ranged::default());
     }
 }
 

@@ -100,9 +100,6 @@ fn create_walker(
             transform: Transform::from_translation(Vec3::new(position.x(), 1.0, position.z())),
             ..Default::default()
         })
-        .with(walker::Walker::default())
-        .with(attack::Ranged::default())
-        .with(Faction::new(Factions::Player))
         .with(selectable)
         .with(CanHaveCamera::default())
         .with_bundle(UnitBundle {
@@ -110,8 +107,10 @@ fn create_walker(
                 speed: 0.1,
                 ..Default::default()
             },
-            ..UnitBundle::new()
+            ..UnitBundle::default()
         })
+        .with_bundle(WalkerBundle::default())
+        .with(attack::Ranged::default())
         .current_entity()
         .unwrap()
 }
@@ -136,8 +135,6 @@ fn create_drone(
             )),
             ..Default::default()
         })
-        .with(drone::Drone::default())
-        .with(Faction::new(Factions::Player))
         .with(selectable)
         .with(CanHaveCamera::default())
         .with_bundle(UnitBundle {
@@ -145,8 +142,9 @@ fn create_drone(
                 speed: 0.3,
                 ..Default::default()
             },
-            ..UnitBundle::new()
+            ..UnitBundle::default()
         })
+        .with_bundle(DroneBundle::default())
         .current_entity()
         .unwrap()
 }
