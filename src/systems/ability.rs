@@ -4,6 +4,7 @@ use bevy::prelude::*;
 pub enum Ability {
     Select,
     SwitchCamera,
+    SwitchBack,
 }
 
 pub struct CurrentAbility {

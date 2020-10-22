@@ -39,7 +39,7 @@ fn update_camera_position(
 }
 
 fn reset_unit_target_if_it_has_camera(
-    mut camera_query: Query<Changed<CameraFollow>>,
+    mut camera_query: Query<&CameraFollow>,
     mut query: Query<(
         Entity,
         &CanHaveCamera,
@@ -94,6 +94,30 @@ fn switch_camera_to_entity(
     ability.ability = Ability::Select;
 }
 
+/// Switches the camera to the previous entity
+fn switch_camera_back(
+    mut ability: ResMut<CurrentAbility>,
+    mut camera_query: Query<&mut CameraFollow>,
+    can_have_camera_query: Query<(&CanHaveCamera, &Unit, Entity)>,
+) {
+    if ability.ability != Ability::SwitchBack {
+        return;
+    }
+
+    for mut camera_follow in &mut camera_query.iter() {
+        if let Some(prev) = camera_follow.previous_entity {
+            // Check that the unit is alive
+            if can_have_camera_query.get::<CanHaveCamera>(prev).is_ok() {
+                camera_follow.previous_entity = camera_follow.entity;
+                camera_follow.entity = Some(prev);
+            }
+        }
+    }
+
+    ability.ability = Ability::Select;
+}
+
+/// Switches the camera to the previous or a random entity if the current one dies
 fn switch_after_current_unit_dies(
     mut camera_query: Query<&mut CameraFollow>,
     mut can_have_camera_query: Query<(&CanHaveCamera, &Unit, Entity)>,
@@ -128,6 +152,7 @@ impl Plugin for CameraPlugin {
         app.add_system(update_camera_position.system())
             .add_system(switch_camera_to_entity.system())
             .add_system(reset_unit_target_if_it_has_camera.system())
-            .add_system(switch_after_current_unit_dies.system());
+            .add_system(switch_after_current_unit_dies.system())
+            .add_system(switch_camera_back.system());
     }
 }
