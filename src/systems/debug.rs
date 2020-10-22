@@ -43,8 +43,8 @@ fn setup_debug_cursor(
         .with(DebugCursor);
 }
 
-fn ability_debug(ability: Res<CurrentAbility>) {
-    println!("Current ability: {:?}", ability.ability);
+fn ability_debug(ability: ChangedRes<CurrentAbility>) {
+    println!("Current ability changed to: {:?}", ability.ability);
 }
 
 pub struct DebugPlugin;

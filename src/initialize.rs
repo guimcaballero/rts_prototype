@@ -1,6 +1,14 @@
 use crate::bundles::*;
 use crate::helpers::shapes::*;
-use crate::systems::{attack, drone, faction::*, selection::Selectable, unit::*, walker};
+use crate::systems::{
+    attack,
+    camera::{CameraFollow, CanHaveCamera},
+    drone,
+    faction::*,
+    selection::Selectable,
+    unit::*,
+    walker,
+};
 use bevy::{math::Quat, prelude::*};
 use bevy_contrib_colors::Tailwind;
 use bevy_mod_picking::*;
@@ -11,14 +19,6 @@ pub fn setup(
     mut materials: ResMut<Assets<StandardMaterial>>,
     mut color_materials: ResMut<Assets<ColorMaterial>>,
 ) {
-    let camera_entity = commands
-        .spawn(Camera3dComponents {
-            ..Default::default()
-        })
-        .with(PickSource::default())
-        .current_entity()
-        .unwrap();
-
     // add entities to the world
     commands
         // plane
@@ -45,7 +45,6 @@ pub fn setup(
                 &mut commands,
                 walker_mesh.clone(),
                 material.clone(),
-                None,
                 Vec3::new(i as f32 * 5.0 - 10.0, 1.0, j as f32 * 5.0 - 10.0),
                 circle_mesh.clone(),
                 circle_material.clone(),
@@ -61,31 +60,38 @@ pub fn setup(
         &mut commands,
         drone_mesh.clone(),
         material.clone(),
-        None,
         Vec3::new(10.0, 20.0, 5.0),
         circle_mesh.clone(),
         circle_material.clone(),
     );
-    create_drone(
+    let camera_holder = create_drone(
         &mut commands,
         drone_mesh,
         material,
-        Some(camera_entity),
         Vec3::new(-25.0, 60.0, 0.0),
         circle_mesh,
         circle_material,
     );
+
+    commands
+        .spawn(Camera3dComponents {
+            ..Default::default()
+        })
+        .with(PickSource::default())
+        .with(CameraFollow {
+            entity: Some(camera_holder),
+            ..Default::default()
+        });
 }
 
 fn create_walker(
     mut commands: &mut Commands,
     mesh: Handle<Mesh>,
     material: Handle<StandardMaterial>,
-    camera_entity: Option<Entity>,
     position: Vec3,
     circle_mesh: Handle<Mesh>,
     circle_material: Handle<ColorMaterial>,
-) {
+) -> Entity {
     let selectable = Selectable::new(&mut commands, circle_mesh, circle_material);
     commands
         .spawn(PbrComponents {
@@ -98,24 +104,26 @@ fn create_walker(
         .with(attack::Ranged::default())
         .with(Faction::new(Factions::Player))
         .with(selectable)
+        .with(CanHaveCamera::default())
         .with_bundle(UnitBundle {
             unit: Unit {
                 speed: 0.1,
                 ..Default::default()
             },
-            ..UnitBundle::new(camera_entity)
-        });
+            ..UnitBundle::new()
+        })
+        .current_entity()
+        .unwrap()
 }
 
 fn create_drone(
     mut commands: &mut Commands,
     mesh: Handle<Mesh>,
     material: Handle<StandardMaterial>,
-    camera_entity: Option<Entity>,
     position: Vec3,
     circle_mesh: Handle<Mesh>,
     circle_material: Handle<ColorMaterial>,
-) {
+) -> Entity {
     let selectable = Selectable::new(&mut commands, circle_mesh, circle_material);
 
     commands
@@ -131,11 +139,14 @@ fn create_drone(
         .with(drone::Drone::default())
         .with(Faction::new(Factions::Player))
         .with(selectable)
+        .with(CanHaveCamera::default())
         .with_bundle(UnitBundle {
             unit: Unit {
                 speed: 0.3,
                 ..Default::default()
             },
-            ..UnitBundle::new(camera_entity)
-        });
+            ..UnitBundle::new()
+        })
+        .current_entity()
+        .unwrap()
 }
