@@ -20,28 +20,79 @@ impl FromResources for UiAssetsResource {
     }
 }
 
+type ButtonIdentifier = String;
+type ButtonTuple = (String, ButtonIdentifier, AbilityChangeCallback);
 struct AvailableButtons {
-    buttons: Vec<(String, AbilityChangeCallback)>,
+    buttons: Vec<ButtonTuple>,
 }
+enum AddButtonError {
+    AlreadyUsedId,
+}
+
+impl AvailableButtons {
+    fn add_button(&mut self, button: ButtonTuple) -> Result<ButtonIdentifier, AddButtonError> {
+        let identifier = button.1.clone();
+
+        // Check that there aren't any buttons with that identifier
+        for (_, id, _) in &self.buttons {
+            if *id == identifier {
+                return Err(AddButtonError::AlreadyUsedId);
+            }
+        }
+
+        self.buttons.push(button);
+
+        Ok(identifier)
+    }
+
+    fn remove_button(&mut self, identifier: ButtonIdentifier) {
+        self.buttons.retain(|(_, id, _)| *id != identifier);
+    }
+}
+
 impl FromResources for AvailableButtons {
     fn from_resources(_resources: &Resources) -> Self {
         AvailableButtons {
             buttons: vec![
-                ("Switch control".to_string(), |mut ability, _| {
-                    ability.ability = Ability::SwitchCamera;
-                }),
-                ("Switch back".to_string(), |mut ability, _| {
-                    ability.ability = Ability::SwitchBack;
-                }),
-                ("Add button".to_string(), |_, mut buttons| {
-                    buttons.buttons.push(("Nothing".to_string(), |_, _| {
-                        println!("nothing");
-                    }));
-                }),
+                (
+                    "Switch control".to_string(),
+                    "switch_camera".to_string(),
+                    |mut ability, _| {
+                        ability.ability = Ability::SwitchCamera;
+                    },
+                ),
+                (
+                    "Switch back".to_string(),
+                    "switch_back_camera".to_string(),
+                    |mut ability, _| {
+                        ability.ability = Ability::SwitchBack;
+                    },
+                ),
+                (
+                    "Add button".to_string(),
+                    "add_nothing_button".to_string(),
+                    |_, mut buttons| {
+                        let _ = buttons.add_button((
+                            "Nothing".to_string(),
+                            "nothing_button".to_string(),
+                            |_, _| {
+                                println!("nothing");
+                            },
+                        ));
+                    },
+                ),
+                (
+                    "Remove button".to_string(),
+                    "remove_nothing_button".to_string(),
+                    |_, mut buttons| {
+                        let _ = buttons.remove_button("nothing_button".to_string());
+                    },
+                ),
             ],
         }
     }
 }
+
 #[derive(Default)]
 struct DisplayedButtons {
     entities: Vec<Entity>,
@@ -56,8 +107,9 @@ fn change_displayed_buttons(
     for entity in &displayed_buttons.entities {
         commands.despawn(*entity);
     }
+    displayed_buttons.entities = Vec::new();
 
-    let entity = commands
+    commands
         // ui camera
         .spawn(UiCameraComponents::default())
         // root node
@@ -81,7 +133,7 @@ fn change_displayed_buttons(
             ..Default::default()
         })
         .with_children(|parent| {
-            for (string, callback) in &available_buttons.buttons {
+            for (string, id, callback) in &available_buttons.buttons {
                 // Spawn a new button
                 parent
                     .spawn(ButtonComponents {
@@ -99,23 +151,24 @@ fn change_displayed_buttons(
                     .with(PickingBlocker {})
                     .with(AbilityButton(*callback))
                     .with_children(|parent| {
-                        parent.spawn(TextComponents {
-                            text: Text {
-                                value: string.clone(),
-                                font: assets.font.clone(),
-                                style: TextStyle {
-                                    font_size: 20.0,
-                                    color: Color::rgb(0.8, 0.8, 0.8),
+                        parent
+                            .spawn(TextComponents {
+                                text: Text {
+                                    value: string.clone(),
+                                    font: assets.font.clone(),
+                                    style: TextStyle {
+                                        font_size: 20.0,
+                                        color: Color::rgb(0.8, 0.8, 0.8),
+                                    },
                                 },
-                            },
-                            ..Default::default()
-                        });
-                    });
+                                ..Default::default()
+                            })
+                            .for_current_entity(|entity| displayed_buttons.entities.push(entity));
+                    })
+                    .for_current_entity(|entity| displayed_buttons.entities.push(entity));
             }
         })
-        .current_entity()
-        .unwrap();
-    displayed_buttons.entities.push(entity);
+        .for_current_entity(|entity| displayed_buttons.entities.push(entity));
 }
 
 type AbilityChangeCallback = fn(ResMut<CurrentAbility>, ResMut<AvailableButtons>) -> ();
