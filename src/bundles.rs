@@ -1,4 +1,5 @@
 use crate::systems::{
+    ability::UnitAbilities,
     drone::Drone,
     faction::Faction,
     health::Health,
@@ -15,6 +16,7 @@ pub struct UnitBundle {
     pub target_position: TargetPosition,
     pub pickable_mesh: PickableMesh,
     pub faction: Faction,
+    pub abilities: UnitAbilities,
 }
 
 #[derive(Bundle, Default)]

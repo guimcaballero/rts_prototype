@@ -1,7 +1,9 @@
 use crate::bundles::*;
 use crate::systems::{
+    ability::*,
     attack,
     camera::{CameraFollow, CanHaveCamera},
+    health::*,
     selection::SelectableBuilder,
     unit::*,
 };
@@ -90,6 +92,15 @@ fn create_walker(
             unit: Unit {
                 speed: 0.1,
                 ..Default::default()
+            },
+            abilities: UnitAbilities {
+                abilities: vec![AbilityButton {
+                    name: "Kill unit".to_string(),
+                    id: "kill-unit-",
+                    callback: |mut commands, _, _, callback_data| {
+                        commands.insert_one(callback_data.entity.unwrap(), Dead {});
+                    },
+                }],
             },
             ..UnitBundle::default()
         })

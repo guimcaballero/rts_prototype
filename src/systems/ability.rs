@@ -1,4 +1,4 @@
-use crate::systems::{health::*, selection::*, ui::*};
+use crate::systems::{selection::*, ui::*};
 use bevy::prelude::*;
 
 #[derive(PartialEq, Debug)]
@@ -19,32 +19,36 @@ impl Default for CurrentAbility {
     }
 }
 
+#[derive(Default)]
 pub struct UnitAbilities {
-    abilities: Vec<ButtonTuple>,
+    pub abilities: Vec<AbilityButton>,
+}
+pub struct AbilityButton {
+    pub name: String,
+    pub id: &'static str,
+    pub callback: AbilityChangeCallback,
 }
 
 fn add_ability_buttons_for_selected_units(
     mut buttons: ResMut<AvailableButtons>,
-    mut query: Query<(Mutated<Selectable>, Entity)>,
+    mut query: Query<(Mutated<Selectable>, &UnitAbilities, Entity)>,
 ) {
-    for (selectable, entity) in &mut query.iter() {
+    for (selectable, abilities, entity) in &mut query.iter() {
         if selectable.selected && !selectable.previously_selected {
-            // TODO Add the abilities as buttons here
-            let _ = buttons.add_button((
-                "Kill unit".to_string(),
-                format!("button-{:?}", entity),
-                |mut commands, _, mut buttons, callback_data| {
-                    buttons.remove_button(format!("button-{:?}", callback_data.entity.unwrap()));
-                    commands.insert_one(callback_data.entity.unwrap(), Dead {});
-                },
-                CallbackData {
-                    entity: Some(entity),
-                },
-            ));
-        } else if selectable.selected {
-            // Don't remove the buttons and don't add them again
-        } else {
-            let _ = buttons.remove_button(format!("button-{:?}", entity));
+            for ability in &abilities.abilities {
+                let _ = buttons.add_button((
+                    ability.name.clone(),
+                    format!("{}{:?}", ability.id.clone(), entity),
+                    ability.callback.clone(),
+                    CallbackData {
+                        entity: Some(entity),
+                    },
+                ));
+            }
+        } else if !selectable.selected {
+            for ability in &abilities.abilities {
+                let _ = buttons.remove_button(format!("{}{:?}", ability.id.clone(), entity));
+            }
         }
     }
 }

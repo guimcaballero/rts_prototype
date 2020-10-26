@@ -1,4 +1,6 @@
+use crate::ability::UnitAbilities;
 use crate::systems::selection::Selectable;
+use crate::ui::AvailableButtons;
 use bevy::prelude::*;
 
 pub struct Health {
@@ -22,15 +24,21 @@ fn kill_if_health_0(mut commands: Commands, mut query: Query<(Mutated<Health>, E
 pub struct Dead;
 fn remove_if_dead(
     mut commands: Commands,
-    mut query: Query<(&Dead, Entity, Option<&mut Selectable>)>,
+    mut buttons: ResMut<AvailableButtons>,
+    mut query: Query<(&Dead, Entity, Option<&Selectable>, Option<&UnitAbilities>)>,
 ) {
-    for (_dead, entity, option_selectable) in &mut query.iter() {
+    for (_dead, entity, option_selectable, option_abilities) in &mut query.iter() {
         // If it's a selectable, despawn it's circle too
-        if let Some(mut selectable) = option_selectable {
-            // Unselect the selectable so the buttons are despawned
-            selectable.set_selected(false);
+        if let Some(selectable) = option_selectable {
             commands.despawn(selectable.circle);
         }
+
+        if let Some(abilities) = option_abilities {
+            for ability in &abilities.abilities {
+                let _ = buttons.remove_button(format!("{}{:?}", ability.id.clone(), entity));
+            }
+        }
+
         commands.despawn(entity);
     }
 }
