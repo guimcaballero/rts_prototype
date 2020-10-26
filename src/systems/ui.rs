@@ -34,6 +34,7 @@ pub struct CallbackData {
 
 pub struct AvailableButtons {
     buttons: Vec<ButtonTuple>,
+    dirty: bool,
 }
 
 impl AvailableButtons {
@@ -48,18 +49,29 @@ impl AvailableButtons {
         }
 
         self.buttons.push(button);
+        self.dirty = true;
 
         Ok(identifier)
     }
 
     pub fn remove_button(&mut self, identifier: ButtonIdentifier) {
+        let old_len = self.buttons.len();
+
+        // Remove buttons with identifier
         self.buttons.retain(|(_, id, _, _)| *id != identifier);
+
+        let new_len = self.buttons.len();
+
+        if old_len != new_len {
+            self.dirty = true;
+        }
     }
 }
 
 impl FromResources for AvailableButtons {
     fn from_resources(_resources: &Resources) -> Self {
         AvailableButtons {
+            dirty: true, // Start as dirty
             buttons: vec![
                 (
                     "Switch control".to_string(),
@@ -113,9 +125,14 @@ struct DisplayedButtons {
 fn change_displayed_buttons(
     mut commands: Commands,
     assets: Res<UiAssetsResource>,
-    available_buttons: ChangedRes<AvailableButtons>,
+    mut available_buttons: ResMut<AvailableButtons>,
     mut displayed_buttons: ResMut<DisplayedButtons>,
 ) {
+    if !available_buttons.dirty {
+        return;
+    }
+    available_buttons.dirty = false;
+
     for entity in &displayed_buttons.entities {
         commands.despawn(*entity);
     }

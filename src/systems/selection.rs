@@ -1,54 +1,31 @@
 use crate::helpers::shapes::*;
-use crate::systems::{ability::*, health::Dead, ui::*, unit::TargetPosition};
+use crate::systems::{ability::*, unit::TargetPosition};
 use bevy::prelude::*;
 use bevy_contrib_colors::*;
 use bevy_mod_picking::*;
 
 pub struct Selectable {
     pub selected: bool,
+    pub previously_selected: bool,
     pub circle: Entity,
     pub entity: Entity,
-    pub on_selected: Option<SelectedEventFunction>,
-    pub on_unselected: Option<SelectedEventFunction>,
 }
 
-type SelectedEventFunction = fn(Entity, &mut ResMut<AvailableButtons>);
-
-/*
-   We can probably move all of this into another component, and then make a system that checks for Mutated Selected, and takes care of calling and keeping the functions
-*/
-
 impl Selectable {
-    pub fn set_selected(&mut self, selected: bool, buttons: &mut ResMut<AvailableButtons>) {
-        if selected {
-            // Only call on_selected if it was selected
-            if !self.selected {
-                if let Some(on_selected) = self.on_selected {
-                    on_selected(self.entity, buttons);
-                }
-            }
-            self.selected = true;
-        } else {
-            // Only call on_unselected if it was selected
-            if self.selected {
-                if let Some(on_unselected) = self.on_unselected {
-                    on_unselected(self.entity, buttons);
-                }
-            }
-            self.selected = false;
-        }
+    pub fn set_selected(&mut self, selected: bool) {
+        self.previously_selected = self.selected;
+        self.selected = selected;
     }
 }
 
 #[derive(Default)]
 pub struct SelectableBuilder;
-
 fn selectable_builder(
     mut commands: Commands,
     resource: Res<SelectionCircleMaterial>,
-    mut query: Query<(Entity, &SelectableBuilder, Option<&UnitAbilities>)>,
+    mut query: Query<(Entity, &SelectableBuilder)>,
 ) {
-    for (entity, _, _abilities_option) in &mut query.iter() {
+    for (entity, _) in &mut query.iter() {
         let circle = commands
             .spawn(SpriteComponents {
                 material: resource.circle_material.clone(),
@@ -72,32 +49,15 @@ fn selectable_builder(
             .current_entity()
             .unwrap();
 
-        let selectable = Selectable {
-            selected: false,
-            circle,
+        commands.insert_one(
             entity,
-            // TODO Change this into something that adds the correct buttons
-            on_selected: Some(|entity, buttons| {
-                let _ = buttons.add_button((
-                    "Kill unit".to_string(),
-                    format!("button-{:?}", entity),
-                    |mut commands, _, mut buttons, callback_data| {
-                        buttons
-                            .remove_button(format!("button-{:?}", callback_data.entity.unwrap()));
-                        commands.insert_one(callback_data.entity.unwrap(), Dead {});
-                    },
-                    CallbackData {
-                        entity: Some(entity),
-                    },
-                ));
-            }),
-            // TODO Change this into something that removes all the added buttons
-            on_unselected: Some(|entity, buttons| {
-                let _ = buttons.remove_button(format!("button-{:?}", entity));
-            }),
-        };
-
-        commands.insert_one(entity, selectable);
+            Selectable {
+                selected: false,
+                previously_selected: false,
+                circle,
+                entity,
+            },
+        );
         commands.remove_one::<SelectableBuilder>(entity);
     }
 }
@@ -108,7 +68,6 @@ fn select_units(
     pick_state: Res<PickState>,
     keyboard_input: Res<Input<KeyCode>>,
     mouse_button_inputs: Res<Input<MouseButton>>,
-    mut buttons: ResMut<AvailableButtons>,
     mut query: Query<&mut Selectable>,
 ) {
     if ability.ability != Ability::Select {
@@ -124,7 +83,7 @@ fn select_units(
         if !keyboard_input.pressed(KeyCode::LControl) {
             // Deselect all units
             for mut selectable in &mut query.iter() {
-                selectable.set_selected(false, &mut buttons);
+                selectable.set_selected(false);
             }
         }
 
@@ -132,7 +91,7 @@ fn select_units(
         let entity = top_pick.entity();
         if let Ok(mut selectable) = query.entity(entity) {
             if let Some(mut unit) = selectable.get() {
-                unit.set_selected(true, &mut buttons);
+                unit.set_selected(true);
             }
         }
     }
@@ -156,7 +115,6 @@ fn drag_select(
     pick_state: Res<PickState>,
     mouse_button_inputs: Res<Input<MouseButton>>,
     mut meshes: ResMut<Assets<Mesh>>,
-    mut buttons: ResMut<AvailableButtons>,
     mut query: Query<(&mut Selectable, &Transform)>,
     mut drag_selection_rectangle: Query<(&Handle<Mesh>, &DragSelectionRectangle, &mut Draw)>,
 ) {
@@ -213,7 +171,6 @@ fn drag_select(
                         initial_position.z(),
                         final_position.z(),
                     ),
-                    &mut buttons,
                 );
             }
         }
