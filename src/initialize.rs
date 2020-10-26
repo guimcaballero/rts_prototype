@@ -3,11 +3,8 @@ use crate::helpers::shapes::*;
 use crate::systems::{
     attack,
     camera::{CameraFollow, CanHaveCamera},
-    drone,
-    faction::*,
     selection::Selectable,
     unit::*,
-    walker,
 };
 use bevy::{math::Quat, prelude::*};
 use bevy_contrib_colors::Tailwind;
@@ -92,15 +89,13 @@ fn create_walker(
     circle_mesh: Handle<Mesh>,
     circle_material: Handle<ColorMaterial>,
 ) -> Entity {
-    let selectable = Selectable::new(&mut commands, circle_mesh, circle_material);
-    commands
+    let entity = commands
         .spawn(PbrComponents {
             mesh,
             material,
             transform: Transform::from_translation(Vec3::new(position.x(), 1.0, position.z())),
             ..Default::default()
         })
-        .with(selectable)
         .with(CanHaveCamera::default())
         .with_bundle(UnitBundle {
             unit: Unit {
@@ -112,7 +107,12 @@ fn create_walker(
         .with_bundle(WalkerBundle::default())
         .with(attack::Ranged::default())
         .current_entity()
-        .unwrap()
+        .unwrap();
+
+    let selectable = Selectable::new(&mut commands, circle_mesh, circle_material, entity);
+    commands.insert_one(entity, selectable);
+
+    entity
 }
 
 fn create_drone(
@@ -123,9 +123,7 @@ fn create_drone(
     circle_mesh: Handle<Mesh>,
     circle_material: Handle<ColorMaterial>,
 ) -> Entity {
-    let selectable = Selectable::new(&mut commands, circle_mesh, circle_material);
-
-    commands
+    let entity = commands
         .spawn(PbrComponents {
             mesh,
             material,
@@ -135,7 +133,6 @@ fn create_drone(
             )),
             ..Default::default()
         })
-        .with(selectable)
         .with(CanHaveCamera::default())
         .with_bundle(UnitBundle {
             unit: Unit {
@@ -146,5 +143,10 @@ fn create_drone(
         })
         .with_bundle(DroneBundle::default())
         .current_entity()
-        .unwrap()
+        .unwrap();
+
+    let selectable = Selectable::new(&mut commands, circle_mesh, circle_material, entity);
+    commands.insert_one(entity, selectable);
+
+    entity
 }

@@ -1,3 +1,4 @@
+use crate::systems::ui::ButtonTuple;
 use bevy::prelude::*;
 
 #[derive(PartialEq, Debug)]
@@ -16,6 +17,10 @@ impl Default for CurrentAbility {
             ability: Ability::Select,
         }
     }
+}
+
+pub struct UnitAbilities {
+    abilities: Vec<ButtonTuple>,
 }
 
 pub struct AbilityPlugin;

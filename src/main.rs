@@ -35,9 +35,9 @@ fn main() {
         .add_plugin(target_indicator::TargetIndicatorPlugin)
         .add_plugin(attack::AttackPlugin)
         .add_plugin(bullet::BulletPlugin)
-        .add_plugin(health::HealthPlugin)
         .add_plugin(ui::UIPlugin)
         .add_plugin(ability::AbilityPlugin)
         .add_startup_system(initialize::setup.system())
+        .add_plugin(health::HealthPlugin)
         .run();
 }

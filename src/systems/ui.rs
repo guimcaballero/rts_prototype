@@ -20,23 +20,30 @@ impl FromResources for UiAssetsResource {
     }
 }
 
-type ButtonIdentifier = String;
-type ButtonTuple = (String, ButtonIdentifier, AbilityChangeCallback);
-struct AvailableButtons {
-    buttons: Vec<ButtonTuple>,
+pub type ButtonIdentifier = String;
+pub type ButtonTuple = (
+    String,
+    ButtonIdentifier,
+    AbilityChangeCallback,
+    CallbackData,
+);
+#[derive(Default, Clone, Copy)]
+pub struct CallbackData {
+    pub entity: Option<Entity>,
 }
-enum AddButtonError {
-    AlreadyUsedId,
+
+pub struct AvailableButtons {
+    buttons: Vec<ButtonTuple>,
 }
 
 impl AvailableButtons {
-    fn add_button(&mut self, button: ButtonTuple) -> Result<ButtonIdentifier, AddButtonError> {
+    pub fn add_button(&mut self, button: ButtonTuple) -> Result<ButtonIdentifier, &str> {
         let identifier = button.1.clone();
 
         // Check that there aren't any buttons with that identifier
-        for (_, id, _) in &self.buttons {
+        for (_, id, _, _) in &self.buttons {
             if *id == identifier {
-                return Err(AddButtonError::AlreadyUsedId);
+                return Err("Already used ID");
             }
         }
 
@@ -45,8 +52,8 @@ impl AvailableButtons {
         Ok(identifier)
     }
 
-    fn remove_button(&mut self, identifier: ButtonIdentifier) {
-        self.buttons.retain(|(_, id, _)| *id != identifier);
+    pub fn remove_button(&mut self, identifier: ButtonIdentifier) {
+        self.buttons.retain(|(_, id, _, _)| *id != identifier);
     }
 }
 
@@ -57,36 +64,41 @@ impl FromResources for AvailableButtons {
                 (
                     "Switch control".to_string(),
                     "switch_camera".to_string(),
-                    |mut ability, _| {
+                    |_, mut ability, _, _| {
                         ability.ability = Ability::SwitchCamera;
                     },
+                    CallbackData::default(),
                 ),
                 (
                     "Switch back".to_string(),
                     "switch_back_camera".to_string(),
-                    |mut ability, _| {
+                    |_, mut ability, _, _| {
                         ability.ability = Ability::SwitchBack;
                     },
+                    CallbackData::default(),
                 ),
                 (
                     "Add button".to_string(),
                     "add_nothing_button".to_string(),
-                    |_, mut buttons| {
+                    |_, _, mut buttons, _| {
                         let _ = buttons.add_button((
                             "Nothing".to_string(),
                             "nothing_button".to_string(),
-                            |_, _| {
+                            |_, _, _, _| {
                                 println!("nothing");
                             },
+                            CallbackData::default(),
                         ));
                     },
+                    CallbackData::default(),
                 ),
                 (
                     "Remove button".to_string(),
                     "remove_nothing_button".to_string(),
-                    |_, mut buttons| {
+                    |_, _, mut buttons, _| {
                         let _ = buttons.remove_button("nothing_button".to_string());
                     },
+                    CallbackData::default(),
                 ),
             ],
         }
@@ -133,7 +145,7 @@ fn change_displayed_buttons(
             ..Default::default()
         })
         .with_children(|parent| {
-            for (string, id, callback) in &available_buttons.buttons {
+            for (string, _id, callback, callback_data) in &available_buttons.buttons {
                 // Spawn a new button
                 parent
                     .spawn(ButtonComponents {
@@ -149,7 +161,7 @@ fn change_displayed_buttons(
                         ..Default::default()
                     })
                     .with(PickingBlocker {})
-                    .with(AbilityButton(*callback))
+                    .with(AbilityButton(*callback, *callback_data))
                     .with_children(|parent| {
                         parent
                             .spawn(TextComponents {
@@ -171,10 +183,12 @@ fn change_displayed_buttons(
         .for_current_entity(|entity| displayed_buttons.entities.push(entity));
 }
 
-type AbilityChangeCallback = fn(ResMut<CurrentAbility>, ResMut<AvailableButtons>) -> ();
+pub type AbilityChangeCallback =
+    fn(Commands, ResMut<CurrentAbility>, ResMut<AvailableButtons>, CallbackData) -> ();
 
-struct AbilityButton(AbilityChangeCallback);
+struct AbilityButton(AbilityChangeCallback, CallbackData);
 fn button_system(
+    commands: Commands,
     ability: ResMut<CurrentAbility>,
     available_buttons: ResMut<AvailableButtons>,
     mut interaction_query: Query<(&mut AbilityButton, Mutated<Interaction>)>,
@@ -182,7 +196,7 @@ fn button_system(
     for (ability_button, interaction) in &mut interaction_query.iter() {
         match *interaction {
             Interaction::Clicked => {
-                ability_button.0(ability, available_buttons);
+                ability_button.0(commands, ability, available_buttons, ability_button.1);
                 return;
             }
             _ => {}

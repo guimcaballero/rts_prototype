@@ -1,5 +1,5 @@
 use crate::helpers::shapes::*;
-use crate::systems::{ability::*, unit::TargetPosition};
+use crate::systems::{ability::*, health::Dead, ui::*, unit::TargetPosition};
 use bevy::prelude::*;
 use bevy_contrib_colors::*;
 use bevy_mod_picking::*;
@@ -7,13 +7,19 @@ use bevy_mod_picking::*;
 pub struct Selectable {
     pub selected: bool,
     pub circle: Entity,
+    pub entity: Entity,
+    pub on_selected: Option<SelectedEventFunction>,
+    pub on_unselected: Option<SelectedEventFunction>,
 }
+
+type SelectedEventFunction = fn(Entity, &mut ResMut<AvailableButtons>) -> ();
 
 impl Selectable {
     pub fn new(
         commands: &mut Commands,
         mesh: Handle<Mesh>,
         material: Handle<ColorMaterial>,
+        entity: Entity,
     ) -> Self {
         let circle = commands
             .spawn(SpriteComponents {
@@ -37,9 +43,50 @@ impl Selectable {
             .with(SelectionCircle)
             .current_entity()
             .unwrap();
+
         Self {
             selected: false,
             circle,
+            entity,
+            // TODO Change this into something that adds the correct buttons
+            on_selected: Some(|entity, buttons| {
+                let _ = buttons.add_button((
+                    "Kill unit".to_string(),
+                    format!("button-{:?}", entity),
+                    |mut commands, _, mut buttons, callback_data| {
+                        buttons
+                            .remove_button(format!("button-{:?}", callback_data.entity.unwrap()));
+                        commands.insert_one(callback_data.entity.unwrap(), Dead {});
+                    },
+                    CallbackData {
+                        entity: Some(entity),
+                    },
+                ));
+            }),
+            // TODO Change this into something that removes all the added buttons
+            on_unselected: Some(|entity, buttons| {
+                let _ = buttons.remove_button(format!("button-{:?}", entity));
+            }),
+        }
+    }
+
+    pub fn set_selected(&mut self, selected: bool, buttons: &mut ResMut<AvailableButtons>) {
+        if selected {
+            // Only call on_selected if it was selected
+            if !self.selected {
+                if let Some(on_selected) = self.on_selected {
+                    on_selected(self.entity, buttons);
+                }
+            }
+            self.selected = true;
+        } else {
+            // Only call on_unselected if it was selected
+            if self.selected {
+                if let Some(on_unselected) = self.on_unselected {
+                    on_unselected(self.entity, buttons);
+                }
+            }
+            self.selected = false;
         }
     }
 }
@@ -50,6 +97,7 @@ fn select_units(
     pick_state: Res<PickState>,
     keyboard_input: Res<Input<KeyCode>>,
     mouse_button_inputs: Res<Input<MouseButton>>,
+    mut buttons: ResMut<AvailableButtons>,
     mut query: Query<&mut Selectable>,
 ) {
     if ability.ability != Ability::Select {
@@ -61,19 +109,19 @@ fn select_units(
         return;
     }
 
-    if !keyboard_input.pressed(KeyCode::LControl) {
-        // Deselect all units
-        for mut selectable in &mut query.iter() {
-            selectable.selected = false;
-        }
-    }
-
-    // Select the top pick
     if let Some(top_pick) = pick_state.top(PickGroup::default()) {
+        if !keyboard_input.pressed(KeyCode::LControl) {
+            // Deselect all units
+            for mut selectable in &mut query.iter() {
+                selectable.set_selected(false, &mut buttons);
+            }
+        }
+
+        // Select the top pick
         let entity = top_pick.entity();
         if let Ok(mut selectable) = query.entity(entity) {
             if let Some(mut unit) = selectable.get() {
-                unit.selected = true;
+                unit.set_selected(true, &mut buttons);
             }
         }
     }
@@ -97,6 +145,7 @@ fn drag_select(
     pick_state: Res<PickState>,
     mouse_button_inputs: Res<Input<MouseButton>>,
     mut meshes: ResMut<Assets<Mesh>>,
+    mut buttons: ResMut<AvailableButtons>,
     mut query: Query<(&mut Selectable, &Transform)>,
     mut drag_selection_rectangle: Query<(&Handle<Mesh>, &DragSelectionRectangle, &mut Draw)>,
 ) {
@@ -143,14 +192,17 @@ fn drag_select(
             // Select the units
             for (mut selectable, transform) in &mut query.iter() {
                 // Mark the units as selected if they are inside the rectangle
-                selectable.selected = is_between_two_values(
-                    transform.translation.x(),
-                    initial_position.x(),
-                    final_position.x(),
-                ) && is_between_two_values(
-                    transform.translation.z(),
-                    initial_position.z(),
-                    final_position.z(),
+                selectable.set_selected(
+                    is_between_two_values(
+                        transform.translation.x(),
+                        initial_position.x(),
+                        final_position.x(),
+                    ) && is_between_two_values(
+                        transform.translation.z(),
+                        initial_position.z(),
+                        final_position.z(),
+                    ),
+                    &mut buttons,
                 );
             }
         }
