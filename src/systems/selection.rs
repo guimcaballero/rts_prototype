@@ -12,19 +12,47 @@ pub struct Selectable {
     pub on_unselected: Option<SelectedEventFunction>,
 }
 
-type SelectedEventFunction = fn(Entity, &mut ResMut<AvailableButtons>) -> ();
+type SelectedEventFunction = fn(Entity, &mut ResMut<AvailableButtons>);
+
+/*
+   We can probably move all of this into another component, and then make a system that checks for Mutated Selected, and takes care of calling and keeping the functions
+*/
 
 impl Selectable {
-    pub fn new(
-        commands: &mut Commands,
-        mesh: Handle<Mesh>,
-        material: Handle<ColorMaterial>,
-        entity: Entity,
-    ) -> Self {
+    pub fn set_selected(&mut self, selected: bool, buttons: &mut ResMut<AvailableButtons>) {
+        if selected {
+            // Only call on_selected if it was selected
+            if !self.selected {
+                if let Some(on_selected) = self.on_selected {
+                    on_selected(self.entity, buttons);
+                }
+            }
+            self.selected = true;
+        } else {
+            // Only call on_unselected if it was selected
+            if self.selected {
+                if let Some(on_unselected) = self.on_unselected {
+                    on_unselected(self.entity, buttons);
+                }
+            }
+            self.selected = false;
+        }
+    }
+}
+
+#[derive(Default)]
+pub struct SelectableBuilder;
+
+fn selectable_builder(
+    mut commands: Commands,
+    resource: Res<SelectionCircleMaterial>,
+    mut query: Query<(Entity, &SelectableBuilder, Option<&UnitAbilities>)>,
+) {
+    for (entity, _, _abilities_option) in &mut query.iter() {
         let circle = commands
             .spawn(SpriteComponents {
-                material,
-                mesh,
+                material: resource.circle_material.clone(),
+                mesh: resource.circle_mesh.clone(),
                 sprite: Sprite {
                     size: Vec2::new(1.0, 1.0),
                     ..Default::default()
@@ -44,7 +72,7 @@ impl Selectable {
             .current_entity()
             .unwrap();
 
-        Self {
+        let selectable = Selectable {
             selected: false,
             circle,
             entity,
@@ -67,27 +95,10 @@ impl Selectable {
             on_unselected: Some(|entity, buttons| {
                 let _ = buttons.remove_button(format!("button-{:?}", entity));
             }),
-        }
-    }
+        };
 
-    pub fn set_selected(&mut self, selected: bool, buttons: &mut ResMut<AvailableButtons>) {
-        if selected {
-            // Only call on_selected if it was selected
-            if !self.selected {
-                if let Some(on_selected) = self.on_selected {
-                    on_selected(self.entity, buttons);
-                }
-            }
-            self.selected = true;
-        } else {
-            // Only call on_unselected if it was selected
-            if self.selected {
-                if let Some(on_unselected) = self.on_unselected {
-                    on_unselected(self.entity, buttons);
-                }
-            }
-            self.selected = false;
-        }
+        commands.insert_one(entity, selectable);
+        commands.remove_one::<SelectableBuilder>(entity);
     }
 }
 
@@ -290,13 +301,18 @@ fn move_circle_for_selected_units(
 }
 
 struct SelectionCircleMaterial {
+    circle_mesh: Handle<Mesh>,
+    circle_material: Handle<ColorMaterial>,
     selected_material: Handle<ColorMaterial>,
     hover_material: Handle<ColorMaterial>,
 }
 impl FromResources for SelectionCircleMaterial {
     fn from_resources(resources: &Resources) -> Self {
         let mut materials = resources.get_mut::<Assets<ColorMaterial>>().unwrap();
+        let mut meshes = resources.get_mut::<Assets<Mesh>>().unwrap();
         SelectionCircleMaterial {
+            circle_mesh: meshes.add(circle_mesh()),
+            circle_material: materials.add(Tailwind::BLUE500.into()),
             selected_material: materials.add(Tailwind::BLUE500.into()),
             hover_material: materials.add(Tailwind::BLUE300.into()),
         }
@@ -327,6 +343,7 @@ impl Plugin for SelectionPlugin {
     fn build(&self, app: &mut AppBuilder) {
         app.init_resource::<SelectionState>()
             .init_resource::<SelectionCircleMaterial>()
+            .add_system(selectable_builder.system())
             .add_system(select_units.system())
             .add_system(drag_select.system())
             .add_startup_system(create_drag_rectangle.system())

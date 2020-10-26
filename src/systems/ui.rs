@@ -184,7 +184,7 @@ fn change_displayed_buttons(
 }
 
 pub type AbilityChangeCallback =
-    fn(Commands, ResMut<CurrentAbility>, ResMut<AvailableButtons>, CallbackData) -> ();
+    fn(Commands, ResMut<CurrentAbility>, ResMut<AvailableButtons>, CallbackData);
 
 struct AbilityButton(AbilityChangeCallback, CallbackData);
 fn button_system(

@@ -1,9 +1,8 @@
 use crate::bundles::*;
-use crate::helpers::shapes::*;
 use crate::systems::{
     attack,
     camera::{CameraFollow, CanHaveCamera},
-    selection::Selectable,
+    selection::SelectableBuilder,
     unit::*,
 };
 use bevy::{math::Quat, prelude::*};
@@ -14,7 +13,6 @@ pub fn setup(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
-    mut color_materials: ResMut<Assets<ColorMaterial>>,
 ) {
     // add entities to the world
     commands
@@ -33,8 +31,6 @@ pub fn setup(
         .spawn(UiCameraComponents::default());
 
     let walker_mesh = meshes.add(Mesh::from(shape::Cube { size: 1.0 }));
-    let circle_mesh = meshes.add(circle_mesh());
-    let circle_material = color_materials.add(Tailwind::BLUE500.into());
     let material = materials.add(Tailwind::RED400.into());
     for i in 0..5 {
         for j in 0..5 {
@@ -43,8 +39,6 @@ pub fn setup(
                 walker_mesh.clone(),
                 material.clone(),
                 Vec3::new(i as f32 * 5.0 - 10.0, 1.0, j as f32 * 5.0 - 10.0),
-                circle_mesh.clone(),
-                circle_material.clone(),
             );
         }
     }
@@ -58,16 +52,12 @@ pub fn setup(
         drone_mesh.clone(),
         material.clone(),
         Vec3::new(10.0, 20.0, 5.0),
-        circle_mesh.clone(),
-        circle_material.clone(),
     );
     let camera_holder = create_drone(
         &mut commands,
         drone_mesh,
         material,
         Vec3::new(-25.0, 60.0, 0.0),
-        circle_mesh,
-        circle_material,
     );
 
     commands
@@ -82,20 +72,19 @@ pub fn setup(
 }
 
 fn create_walker(
-    mut commands: &mut Commands,
+    commands: &mut Commands,
     mesh: Handle<Mesh>,
     material: Handle<StandardMaterial>,
     position: Vec3,
-    circle_mesh: Handle<Mesh>,
-    circle_material: Handle<ColorMaterial>,
 ) -> Entity {
-    let entity = commands
+    commands
         .spawn(PbrComponents {
             mesh,
             material,
             transform: Transform::from_translation(Vec3::new(position.x(), 1.0, position.z())),
             ..Default::default()
         })
+        .with(SelectableBuilder::default())
         .with(CanHaveCamera::default())
         .with_bundle(UnitBundle {
             unit: Unit {
@@ -107,23 +96,16 @@ fn create_walker(
         .with_bundle(WalkerBundle::default())
         .with(attack::Ranged::default())
         .current_entity()
-        .unwrap();
-
-    let selectable = Selectable::new(&mut commands, circle_mesh, circle_material, entity);
-    commands.insert_one(entity, selectable);
-
-    entity
+        .unwrap()
 }
 
 fn create_drone(
-    mut commands: &mut Commands,
+    commands: &mut Commands,
     mesh: Handle<Mesh>,
     material: Handle<StandardMaterial>,
     position: Vec3,
-    circle_mesh: Handle<Mesh>,
-    circle_material: Handle<ColorMaterial>,
 ) -> Entity {
-    let entity = commands
+    commands
         .spawn(PbrComponents {
             mesh,
             material,
@@ -133,6 +115,7 @@ fn create_drone(
             )),
             ..Default::default()
         })
+        .with(SelectableBuilder::default())
         .with(CanHaveCamera::default())
         .with_bundle(UnitBundle {
             unit: Unit {
@@ -143,10 +126,5 @@ fn create_drone(
         })
         .with_bundle(DroneBundle::default())
         .current_entity()
-        .unwrap();
-
-    let selectable = Selectable::new(&mut commands, circle_mesh, circle_material, entity);
-    commands.insert_one(entity, selectable);
-
-    entity
+        .unwrap()
 }
