@@ -1,11 +1,15 @@
 use crate::systems::{selection::*, ui::*};
+use crate::unit::Unit;
 use bevy::prelude::*;
+use bevy_mod_picking::PickGroup;
+use bevy_mod_picking::PickState;
 
 #[derive(PartialEq, Debug)]
 pub enum Ability {
     Select,
     SwitchCamera,
     SwitchBack,
+    Teleport(Entity),
 }
 
 pub struct CurrentAbility {
@@ -38,7 +42,7 @@ fn add_ability_buttons_for_selected_units(
             for ability in &abilities.abilities {
                 let _ = buttons.add_button((
                     ability.name.clone(),
-                    format!("{}{:?}", ability.id.clone(), entity),
+                    format!("{}-{:?}", ability.id.clone(), entity),
                     ability.callback.clone(),
                     CallbackData {
                         entity: Some(entity),
@@ -47,8 +51,31 @@ fn add_ability_buttons_for_selected_units(
             }
         } else if !selectable.selected {
             for ability in &abilities.abilities {
-                let _ = buttons.remove_button(format!("{}{:?}", ability.id.clone(), entity));
+                let _ = buttons.remove_button(format!("{}-{:?}", ability.id.clone(), entity));
             }
+        }
+    }
+}
+
+fn teleport_ability(
+    pick_state: Res<PickState>,
+    mouse_button_inputs: Res<Input<MouseButton>>,
+    mut ability: ResMut<CurrentAbility>,
+    query: Query<(&mut Transform, &Unit)>,
+) {
+    if let Ability::Teleport(entity) = ability.ability {
+        if mouse_button_inputs.just_pressed(MouseButton::Right) {
+            // Get the world position
+            if let Some(top_pick) = pick_state.top(PickGroup::default()) {
+                let mut pos = *top_pick.position();
+                pos.set_y(1.);
+
+                if let Ok(mut transform) = query.get_mut::<Transform>(entity) {
+                    transform.translation = pos;
+                }
+            }
+
+            ability.ability = Ability::Select;
         }
     }
 }
@@ -57,6 +84,19 @@ pub struct AbilityPlugin;
 impl Plugin for AbilityPlugin {
     fn build(&self, app: &mut AppBuilder) {
         app.init_resource::<CurrentAbility>()
-            .add_system(add_ability_buttons_for_selected_units.system());
+            .add_system(add_ability_buttons_for_selected_units.system())
+            .add_system(teleport_ability.system());
+    }
+}
+
+use std::fmt;
+impl fmt::Display for Ability {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Ability::Select => write!(f, "Select"),
+            Ability::SwitchCamera => write!(f, "Switch Camera"),
+            Ability::SwitchBack => write!(f, "Switch Back"),
+            Ability::Teleport(_) => write!(f, "Teleport"),
+        }
     }
 }

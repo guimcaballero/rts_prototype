@@ -45,6 +45,13 @@ pub fn setup(
         }
     }
 
+    create_tp_healer(
+        &mut commands,
+        walker_mesh.clone(),
+        materials.add(Tailwind::RED700.into()),
+        Vec3::new(20.0, 0.0, 20.0),
+    );
+
     let drone_mesh = meshes.add(Mesh::from(shape::Icosphere {
         subdivisions: 4,
         radius: 1.0,
@@ -93,19 +100,47 @@ fn create_walker(
                 speed: 0.1,
                 ..Default::default()
             },
+            ..UnitBundle::default()
+        })
+        .with_bundle(WalkerBundle::default())
+        .with(attack::Ranged::default())
+        .current_entity()
+        .unwrap()
+}
+
+fn create_tp_healer(
+    commands: &mut Commands,
+    mesh: Handle<Mesh>,
+    material: Handle<StandardMaterial>,
+    position: Vec3,
+) -> Entity {
+    commands
+        .spawn(PbrComponents {
+            mesh,
+            material,
+            transform: Transform::from_translation(Vec3::new(position.x(), 1.0, position.z())),
+            ..Default::default()
+        })
+        .with(SelectableBuilder::default())
+        .with(CanHaveCamera::default())
+        .with_bundle(UnitBundle {
+            unit: Unit {
+                speed: 0.3,
+                ..Default::default()
+            },
+            health: Health { health_value: 10 },
             abilities: UnitAbilities {
                 abilities: vec![AbilityButton {
-                    name: "Kill unit".to_string(),
-                    id: "kill-unit-",
-                    callback: |mut commands, _, _, callback_data| {
-                        commands.insert_one(callback_data.entity.unwrap(), Dead {});
+                    name: "Teleport".to_string(),
+                    id: "teleport",
+                    callback: |_commands, mut ability, _buttons, callback_data| {
+                        ability.ability = Ability::Teleport(callback_data.entity.unwrap());
                     },
                 }],
             },
             ..UnitBundle::default()
         })
         .with_bundle(WalkerBundle::default())
-        .with(attack::Ranged::default())
         .current_entity()
         .unwrap()
 }
