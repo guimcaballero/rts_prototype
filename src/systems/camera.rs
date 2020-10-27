@@ -82,7 +82,7 @@ fn switch_camera_to_entity(
         let entity = top_pick.entity();
 
         // Check if it's in the CanHaveCamera query
-        if let Ok(_) = query.get::<CanHaveCamera>(entity) {
+        if query.get::<CanHaveCamera>(entity).is_ok() {
             for mut camera_follow in &mut camera_query.iter() {
                 camera_follow.previous_entity = camera_follow.entity;
                 camera_follow.entity = Some(entity);

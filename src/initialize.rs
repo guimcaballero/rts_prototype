@@ -47,7 +47,7 @@ pub fn setup(
 
     create_tp_healer(
         &mut commands,
-        walker_mesh.clone(),
+        walker_mesh,
         materials.add(Tailwind::RED700.into()),
         Vec3::new(20.0, 0.0, 20.0),
     );

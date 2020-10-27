@@ -186,12 +186,9 @@ fn button_system(
     mut interaction_query: Query<(&mut AbilityButton, Mutated<Interaction>)>,
 ) {
     for (ability_button, interaction) in &mut interaction_query.iter() {
-        match *interaction {
-            Interaction::Clicked => {
-                ability_button.0(commands, ability, available_buttons, ability_button.1);
-                return;
-            }
-            _ => {}
+        if *interaction == Interaction::Clicked {
+            ability_button.0(commands, ability, available_buttons, ability_button.1);
+            return;
         }
     }
 }

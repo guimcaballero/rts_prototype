@@ -11,6 +11,7 @@ pub enum Ability {
     SwitchBack,
     Teleport(Entity),
     HealUnit,
+    // TODO Add HealArea ability
 }
 
 pub struct CurrentAbility {
@@ -43,8 +44,8 @@ fn add_ability_buttons_for_selected_units(
             for ability in &abilities.abilities {
                 let _ = buttons.add_button((
                     ability.name.clone(),
-                    format!("{}-{:?}", ability.id.clone(), entity),
-                    ability.callback.clone(),
+                    format!("{}-{:?}", ability.id, entity),
+                    ability.callback,
                     CallbackData {
                         entity: Some(entity),
                     },
@@ -52,7 +53,7 @@ fn add_ability_buttons_for_selected_units(
             }
         } else if !selectable.selected {
             for ability in &abilities.abilities {
-                let _ = buttons.remove_button(format!("{}-{:?}", ability.id.clone(), entity));
+                let _ = buttons.remove_button(format!("{}-{:?}", ability.id, entity));
             }
         }
     }

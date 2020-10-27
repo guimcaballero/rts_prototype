@@ -20,7 +20,7 @@ impl Default for Health {
 impl Health {
     pub fn new(value: i16) -> Self {
         Self {
-            value: value,
+            value,
             max_health: value,
         }
     }
@@ -56,7 +56,7 @@ fn remove_if_dead(
 
         if let Some(abilities) = option_abilities {
             for ability in &abilities.abilities {
-                let _ = buttons.remove_button(format!("{}{:?}", ability.id.clone(), entity));
+                let _ = buttons.remove_button(format!("{}{:?}", ability.id, entity));
             }
         }
 

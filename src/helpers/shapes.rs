@@ -12,7 +12,6 @@ pub fn rectangle_mesh() -> Mesh {
 }
 
 pub fn rectangle_attributes(a: Vec3, b: Vec3) -> Vec<VertexAttribute> {
-    // TODO Figure out the 4 vertices
     let max_x = f32::max(a.x(), b.x());
     let min_x = f32::min(a.x(), b.x());
     let max_z = f32::max(a.z(), b.z());
