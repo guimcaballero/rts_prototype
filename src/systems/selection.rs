@@ -279,8 +279,13 @@ impl FromResources for SelectionCircleMaterial {
 fn set_target_for_selected(
     pick_state: Res<PickState>,
     mouse_button_inputs: Res<Input<MouseButton>>,
+    ability: Res<CurrentAbility>,
     mut query: Query<(&Selectable, &mut TargetPosition)>,
 ) {
+    if ability.ability != Ability::Select {
+        return;
+    }
+
     if mouse_button_inputs.just_pressed(MouseButton::Right) {
         // Get the world position
         if let Some(top_pick) = pick_state.top(PickGroup::default()) {

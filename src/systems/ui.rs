@@ -74,7 +74,7 @@ impl FromResources for AvailableButtons {
             dirty: true, // Start as dirty
             buttons: vec![
                 (
-                    "Switch control".to_string(),
+                    "Switch Camera".to_string(),
                     "switch_camera".to_string(),
                     |_, mut ability, _, _| {
                         ability.ability = Ability::SwitchCamera;
@@ -86,29 +86,6 @@ impl FromResources for AvailableButtons {
                     "switch_back_camera".to_string(),
                     |_, mut ability, _, _| {
                         ability.ability = Ability::SwitchBack;
-                    },
-                    CallbackData::default(),
-                ),
-                (
-                    "Add button".to_string(),
-                    "add_nothing_button".to_string(),
-                    |_, _, mut buttons, _| {
-                        let _ = buttons.add_button((
-                            "Nothing".to_string(),
-                            "nothing_button".to_string(),
-                            |_, _, _, _| {
-                                println!("nothing");
-                            },
-                            CallbackData::default(),
-                        ));
-                    },
-                    CallbackData::default(),
-                ),
-                (
-                    "Remove button".to_string(),
-                    "remove_nothing_button".to_string(),
-                    |_, _, mut buttons, _| {
-                        let _ = buttons.remove_button("nothing_button".to_string());
                     },
                     CallbackData::default(),
                 ),
@@ -139,8 +116,6 @@ fn change_displayed_buttons(
     displayed_buttons.entities = Vec::new();
 
     commands
-        // ui camera
-        .spawn(UiCameraComponents::default())
         // root node
         .spawn(NodeComponents {
             style: Style {
@@ -238,12 +213,54 @@ fn block_picking_under_blockers(
     pick_state.enabled = !some_is_hovered;
 }
 
+// Ability display UI
+struct AbilityText;
+fn init_ability_text(mut commands: Commands, assets: Res<UiAssetsResource>) {
+    commands
+        // root node
+        .spawn(NodeComponents {
+            style: Style {
+                position_type: PositionType::Absolute,
+                position: Rect {
+                    left: Val::Px(10.),
+                    top: Val::Px(10.),
+                    ..Default::default()
+                },
+                ..Default::default()
+            },
+            material: assets.material_none.clone(),
+            ..Default::default()
+        })
+        .with_children(|parent| {
+            parent
+                .spawn(TextComponents {
+                    text: Text {
+                        value: "Ability: None".to_string(),
+                        font: assets.font.clone(),
+                        style: TextStyle {
+                            font_size: 40.0,
+                            color: Color::rgb(0.8, 0.8, 0.8),
+                        },
+                    },
+                    ..Default::default()
+                })
+                .with(AbilityText);
+        });
+}
+fn ability_text_update(ability: Res<CurrentAbility>, mut query: Query<(&mut Text, &AbilityText)>) {
+    for (mut text, _tag) in &mut query.iter() {
+        text.value = format!("Ability: {}", ability.ability);
+    }
+}
+
 pub struct UIPlugin;
 impl Plugin for UIPlugin {
     fn build(&self, app: &mut AppBuilder) {
         app.init_resource::<UiAssetsResource>()
             .init_resource::<AvailableButtons>()
             .init_resource::<DisplayedButtons>()
+            .add_startup_system(init_ability_text.system())
+            .add_system(ability_text_update.system())
             .add_system(block_picking_under_blockers.system())
             .add_system(button_system.system())
             .add_system(change_displayed_buttons.system());
