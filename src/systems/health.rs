@@ -4,18 +4,39 @@ use crate::ui::AvailableButtons;
 use bevy::prelude::*;
 
 pub struct Health {
-    pub health_value: i16,
+    pub value: i16,
+    max_health: i16,
 }
 
 impl Default for Health {
     fn default() -> Self {
-        Self { health_value: 3 }
+        Self {
+            value: 3,
+            max_health: 3,
+        }
+    }
+}
+
+impl Health {
+    pub fn new(value: i16) -> Self {
+        Self {
+            value: value,
+            max_health: value,
+        }
+    }
+
+    pub fn damage(&mut self, value: i16) {
+        self.value = (self.value - value).min(self.max_health);
+    }
+
+    pub fn heal(&mut self, value: i16) {
+        self.value = (self.value + value).min(self.max_health);
     }
 }
 
 fn kill_if_health_0(mut commands: Commands, mut query: Query<(Mutated<Health>, Entity)>) {
     for (health, entity) in &mut query.iter() {
-        if health.health_value <= 0 {
+        if health.value <= 0 {
             commands.insert_one(entity, Dead {});
         }
     }

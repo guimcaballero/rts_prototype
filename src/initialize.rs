@@ -128,15 +128,24 @@ fn create_tp_healer(
                 speed: 0.3,
                 ..Default::default()
             },
-            health: Health { health_value: 10 },
+            health: Health::new(10),
             abilities: UnitAbilities {
-                abilities: vec![AbilityButton {
-                    name: "Teleport".to_string(),
-                    id: "teleport",
-                    callback: |_commands, mut ability, _buttons, callback_data| {
-                        ability.ability = Ability::Teleport(callback_data.entity.unwrap());
+                abilities: vec![
+                    AbilityButton {
+                        name: "Teleport".to_string(),
+                        id: "teleport",
+                        callback: |_commands, mut ability, _buttons, callback_data| {
+                            ability.ability = Ability::Teleport(callback_data.entity.unwrap());
+                        },
                     },
-                }],
+                    AbilityButton {
+                        name: "Heal".to_string(),
+                        id: "heal-unit",
+                        callback: |_commands, mut ability, _buttons, _callback_data| {
+                            ability.ability = Ability::HealUnit;
+                        },
+                    },
+                ],
             },
             ..UnitBundle::default()
         })

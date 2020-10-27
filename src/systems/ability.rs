@@ -1,4 +1,4 @@
-use crate::systems::{selection::*, ui::*};
+use crate::systems::{health::*, selection::*, ui::*};
 use crate::unit::Unit;
 use bevy::prelude::*;
 use bevy_mod_picking::PickGroup;
@@ -10,6 +10,7 @@ pub enum Ability {
     SwitchCamera,
     SwitchBack,
     Teleport(Entity),
+    HealUnit,
 }
 
 pub struct CurrentAbility {
@@ -80,12 +81,34 @@ fn teleport_ability(
     }
 }
 
+fn heal_unit_ability(
+    pick_state: Res<PickState>,
+    mouse_button_inputs: Res<Input<MouseButton>>,
+    mut ability: ResMut<CurrentAbility>,
+    query: Query<(&mut Health, &Unit)>,
+) {
+    if Ability::HealUnit != ability.ability {
+        return;
+    }
+
+    if mouse_button_inputs.just_pressed(MouseButton::Left) {
+        // Get the world position
+        if let Some(top_pick) = pick_state.top(PickGroup::default()) {
+            if let Ok(mut health) = query.get_mut::<Health>(top_pick.entity()) {
+                health.heal(20);
+            }
+            ability.ability = Ability::Select;
+        }
+    }
+}
+
 pub struct AbilityPlugin;
 impl Plugin for AbilityPlugin {
     fn build(&self, app: &mut AppBuilder) {
         app.init_resource::<CurrentAbility>()
             .add_system(add_ability_buttons_for_selected_units.system())
-            .add_system(teleport_ability.system());
+            .add_system(teleport_ability.system())
+            .add_system(heal_unit_ability.system());
     }
 }
 
@@ -97,6 +120,7 @@ impl fmt::Display for Ability {
             Ability::SwitchCamera => write!(f, "Switch Camera"),
             Ability::SwitchBack => write!(f, "Switch Back"),
             Ability::Teleport(_) => write!(f, "Teleport"),
+            Ability::HealUnit => write!(f, "Heal unit"),
         }
     }
 }

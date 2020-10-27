@@ -71,7 +71,7 @@ fn bullet_collision(
             let distance = (bullet_translation - enemy_translation).length();
 
             if distance < 1.0 {
-                health.health_value -= 1;
+                health.damage(1);
 
                 commands.despawn(bullet_entity);
             }
