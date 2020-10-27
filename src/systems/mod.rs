@@ -5,6 +5,7 @@ pub mod axes;
 pub mod bullet;
 pub mod camera;
 pub mod debug;
+pub mod drag_selection;
 pub mod drone;
 pub mod faction;
 pub mod health;

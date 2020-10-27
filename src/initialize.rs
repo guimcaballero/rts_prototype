@@ -145,6 +145,13 @@ fn create_tp_healer(
                             ability.ability = Ability::HealUnit;
                         },
                     },
+                    AbilityButton {
+                        name: "Heal area".to_string(),
+                        id: "heal-area",
+                        callback: |_commands, mut ability, _buttons, _callback_data| {
+                            ability.ability = Ability::HealArea;
+                        },
+                    },
                 ],
             },
             ..UnitBundle::default()

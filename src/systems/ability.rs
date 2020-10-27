@@ -11,7 +11,7 @@ pub enum Ability {
     SwitchBack,
     Teleport(Entity),
     HealUnit,
-    // TODO Add HealArea ability
+    HealArea,
 }
 
 pub struct CurrentAbility {
@@ -122,6 +122,7 @@ impl fmt::Display for Ability {
             Ability::SwitchBack => write!(f, "Switch Back"),
             Ability::Teleport(_) => write!(f, "Teleport"),
             Ability::HealUnit => write!(f, "Heal unit"),
+            Ability::HealArea => write!(f, "Heal area"),
         }
     }
 }

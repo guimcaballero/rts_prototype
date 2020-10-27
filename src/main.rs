@@ -2,7 +2,7 @@
 
 #[allow(unused_imports)]
 use crate::systems::{
-    ability, aliens, attack, axes, bullet, camera, debug, drone, health, selection,
+    ability, aliens, attack, axes, bullet, camera, debug, drag_selection, drone, health, selection,
     target_indicator, ui, unit, walker,
 };
 use bevy::prelude::*;
@@ -26,6 +26,7 @@ fn main() {
         // .add_plugin(debug::DebugPlugin)
         .add_plugin(PickingPlugin)
         .add_plugin(selection::SelectionPlugin)
+        .add_plugin(drag_selection::DragSelectionPlugin)
         .add_plugin(drone::DronePlugin)
         .add_plugin(camera::CameraPlugin)
         .add_plugin(unit::UnitPlugin)
