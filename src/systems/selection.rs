@@ -1,7 +1,5 @@
-use crate::helpers::shapes::*;
-use crate::systems::{ability::*, unit::TargetPosition};
+use crate::systems::{ability::*, selection_circle::*, unit::TargetPosition};
 use bevy::prelude::*;
-use bevy_contrib_colors::*;
 use bevy_mod_picking::*;
 
 pub struct Selectable {
@@ -45,7 +43,7 @@ fn selectable_builder(
                 },
                 ..Default::default()
             })
-            .with(SelectionCircle)
+            .with(SelectionCircle::default())
             .current_entity()
             .unwrap();
 
@@ -97,78 +95,6 @@ fn select_units(
     }
 }
 
-struct SelectionCircle;
-fn move_circle_for_selected_units(
-    pick_state: Res<PickState>,
-    resource: Res<SelectionCircleMaterial>,
-    mut query: Query<(&Selectable, &Transform, Entity)>,
-    circle_query: Query<(
-        &SelectionCircle,
-        &mut Draw,
-        &mut Transform,
-        &mut Handle<ColorMaterial>,
-    )>,
-) {
-    for (selectable, transform, entity) in &mut query.iter() {
-        let mut is_hovered = false;
-
-        if let Some(top_pick) = pick_state.top(PickGroup::default()) {
-            let top_entity = top_pick.entity();
-
-            if entity == top_entity {
-                is_hovered = true;
-            }
-        }
-
-        let mut draw = match circle_query.get_mut::<Draw>(selectable.circle) {
-            Ok(draw) => draw,
-            _ => continue,
-        };
-        let mut circle_transform = match circle_query.get_mut::<Transform>(selectable.circle) {
-            Ok(transform) => transform,
-            _ => continue,
-        };
-        let mut material_handle =
-            match circle_query.get_mut::<Handle<ColorMaterial>>(selectable.circle) {
-                Ok(material) => material,
-                _ => continue,
-            };
-
-        if is_hovered || selectable.selected {
-            draw.is_visible = true;
-            let translation = transform.translation;
-            circle_transform.translation = Vec3::new(translation.x(), 0.1, translation.z());
-
-            *material_handle = if is_hovered {
-                resource.hover_material.clone()
-            } else {
-                resource.selected_material.clone()
-            };
-        } else {
-            draw.is_visible = false;
-        }
-    }
-}
-
-struct SelectionCircleMaterial {
-    circle_mesh: Handle<Mesh>,
-    circle_material: Handle<ColorMaterial>,
-    selected_material: Handle<ColorMaterial>,
-    hover_material: Handle<ColorMaterial>,
-}
-impl FromResources for SelectionCircleMaterial {
-    fn from_resources(resources: &Resources) -> Self {
-        let mut materials = resources.get_mut::<Assets<ColorMaterial>>().unwrap();
-        let mut meshes = resources.get_mut::<Assets<Mesh>>().unwrap();
-        SelectionCircleMaterial {
-            circle_mesh: meshes.add(circle_mesh()),
-            circle_material: materials.add(Tailwind::BLUE500.into()),
-            selected_material: materials.add(Tailwind::BLUE500.into()),
-            hover_material: materials.add(Tailwind::BLUE300.into()),
-        }
-    }
-}
-
 fn set_target_for_selected(
     pick_state: Res<PickState>,
     mouse_button_inputs: Res<Input<MouseButton>>,
@@ -196,10 +122,8 @@ fn set_target_for_selected(
 pub struct SelectionPlugin;
 impl Plugin for SelectionPlugin {
     fn build(&self, app: &mut AppBuilder) {
-        app.init_resource::<SelectionCircleMaterial>()
-            .add_system(selectable_builder.system())
+        app.add_system(selectable_builder.system())
             .add_system(select_units.system())
-            .add_system(set_target_for_selected.system())
-            .add_system(move_circle_for_selected_units.system());
+            .add_system(set_target_for_selected.system());
     }
 }

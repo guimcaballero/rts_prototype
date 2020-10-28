@@ -11,6 +11,7 @@ pub mod faction;
 pub mod health;
 pub mod health_numbers;
 pub mod selection;
+pub mod selection_circle;
 pub mod target_indicator;
 pub mod ui;
 pub mod unit;

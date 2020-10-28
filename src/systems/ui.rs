@@ -1,4 +1,7 @@
-use crate::systems::ability::{Ability, CurrentAbility};
+use crate::systems::{
+    ability::{Ability, CurrentAbility},
+    selection_circle::*,
+};
 use bevy::prelude::*;
 use bevy_mod_picking::*;
 
@@ -30,6 +33,7 @@ pub type ButtonTuple = (
 #[derive(Default, Clone, Copy)]
 pub struct CallbackData {
     pub entity: Option<Entity>,
+    pub associated_circle: Option<Entity>,
 }
 
 pub struct AvailableButtons {
@@ -153,7 +157,10 @@ fn change_displayed_buttons(
                         ..Default::default()
                     })
                     .with(PickingBlocker {})
-                    .with(AbilityButton(*callback, *callback_data))
+                    .with(AbilityButton {
+                        callback: *callback,
+                        data: *callback_data,
+                    })
                     .with_children(|parent| {
                         parent
                             .spawn(TextComponents {
@@ -178,17 +185,27 @@ fn change_displayed_buttons(
 pub type AbilityChangeCallback =
     fn(Commands, ResMut<CurrentAbility>, ResMut<AvailableButtons>, CallbackData);
 
-struct AbilityButton(AbilityChangeCallback, CallbackData);
+struct AbilityButton {
+    callback: AbilityChangeCallback,
+    data: CallbackData,
+}
 fn button_system(
     commands: Commands,
     ability: ResMut<CurrentAbility>,
     available_buttons: ResMut<AvailableButtons>,
     mut interaction_query: Query<(&mut AbilityButton, Mutated<Interaction>)>,
+    circle_query: Query<&mut SelectionCircle>,
 ) {
     for (ability_button, interaction) in &mut interaction_query.iter() {
         if *interaction == Interaction::Clicked {
-            ability_button.0(commands, ability, available_buttons, ability_button.1);
+            (ability_button.callback)(commands, ability, available_buttons, ability_button.data);
             return;
+        }
+
+        if let Some(associated_entity) = ability_button.data.associated_circle {
+            if let Ok(mut circle) = circle_query.get_mut::<SelectionCircle>(associated_entity) {
+                circle.unit_highlighted = *interaction == Interaction::Hovered;
+            }
         }
     }
 }

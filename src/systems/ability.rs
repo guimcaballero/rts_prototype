@@ -48,6 +48,7 @@ fn add_ability_buttons_for_selected_units(
                     ability.callback,
                     CallbackData {
                         entity: Some(entity),
+                        associated_circle: Some(selectable.circle),
                     },
                 ));
             }
