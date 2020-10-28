@@ -2,10 +2,10 @@ use crate::systems::ability::{Ability, CurrentAbility};
 use bevy::prelude::*;
 use bevy_mod_picking::*;
 
-struct UiAssetsResource {
+pub struct UiAssetsResource {
     material: Handle<ColorMaterial>,
     material_none: Handle<ColorMaterial>,
-    font: Handle<Font>,
+    pub font: Handle<Font>,
 }
 
 impl FromResources for UiAssetsResource {
@@ -244,6 +244,7 @@ fn init_ability_text(mut commands: Commands, assets: Res<UiAssetsResource>) {
                 .with(AbilityText);
         });
 }
+
 fn ability_text_update(ability: Res<CurrentAbility>, mut query: Query<(&mut Text, &AbilityText)>) {
     for (mut text, _tag) in &mut query.iter() {
         text.value = format!("Ability: {}", ability.ability);

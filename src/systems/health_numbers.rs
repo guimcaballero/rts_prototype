@@ -1,0 +1,97 @@
+use crate::systems::{camera::*, health::*, ui::*};
+use bevy::prelude::*;
+
+struct HealthDifferenceNumber {
+    should_despawn_at: f64,
+}
+
+const TEXT_LIFETIME: f64 = 1.;
+const TEXT_SPEED: f32 = 1.;
+
+fn spawn_health_numbers(
+    mut commands: Commands,
+    time: Res<Time>,
+    assets: Res<UiAssetsResource>,
+    fonts: Res<Assets<Font>>,
+    mut textures: ResMut<Assets<Texture>>,
+    mut color_materials: ResMut<Assets<ColorMaterial>>,
+    mut query: Query<(Mutated<Health>, &Transform)>,
+) {
+    if let Some(font) = fonts.get(assets.font.clone()) {
+        for (health, transform) in &mut query.iter() {
+            let diff = health.difference();
+
+            if diff == 0 {
+                continue;
+            }
+
+            let text = font.render_text(
+                &*format!("{}", diff.abs()),
+                if diff > 0 {
+                    Color::rgb(0., 0.8, 0.)
+                } else {
+                    Color::rgb(1., 0., 0.)
+                },
+                50.,
+                100,
+                100,
+            );
+            let text_handle = textures.add(text);
+
+            commands
+                .spawn(SpriteComponents {
+                    material: color_materials.add(text_handle.into()),
+
+                    sprite: Sprite {
+                        size: Vec2::new(1.0, 1.0),
+                        ..Default::default()
+                    },
+                    transform: Transform {
+                        // TODO Randomize position a bit
+                        translation: transform.translation + Vec3::new(0., 2., 0.),
+                        scale: Vec3::new(-0.03, 0.03, 0.03),
+                        ..Default::default()
+                    },
+                    ..Default::default()
+                })
+                .with(HealthDifferenceNumber {
+                    should_despawn_at: time.seconds_since_startup + TEXT_LIFETIME,
+                });
+        }
+    }
+}
+
+fn move_numbers_up_and_rotate(
+    time: Res<Time>,
+    mut query: Query<(&mut Transform, &HealthDifferenceNumber)>,
+    mut camera_query: Query<(&CameraFollow, &Transform)>,
+) {
+    let mut cam_temp = camera_query.iter();
+    let (_camera, camera_transform) = cam_temp.iter().next().unwrap();
+
+    for (mut transform, _) in &mut query.iter() {
+        transform.look_at(camera_transform.translation, Vec3::unit_y());
+        transform.translation += Vec3::unit_y() * time.delta_seconds * TEXT_SPEED;
+    }
+}
+
+fn despawn_numbers(
+    mut commands: Commands,
+    time: Res<Time>,
+    mut query: Query<(Entity, &HealthDifferenceNumber)>,
+) {
+    for (entity, number) in &mut query.iter() {
+        if time.seconds_since_startup >= number.should_despawn_at {
+            commands.despawn(entity);
+        }
+    }
+}
+
+pub struct HealthNumbersPlugin;
+impl Plugin for HealthNumbersPlugin {
+    fn build(&self, app: &mut AppBuilder) {
+        app.add_system(spawn_health_numbers.system())
+            .add_system(move_numbers_up_and_rotate.system())
+            .add_system(despawn_numbers.system());
+    }
+}

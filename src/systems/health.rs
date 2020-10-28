@@ -1,11 +1,11 @@
-use crate::ability::UnitAbilities;
-use crate::systems::selection::Selectable;
-use crate::ui::AvailableButtons;
+use crate::systems::{ability::*, selection::Selectable};
+use crate::ui::*;
 use bevy::prelude::*;
 
 pub struct Health {
     pub value: i16,
     max_health: i16,
+    previous_value: i16, // Used for the displayed number
 }
 
 impl Default for Health {
@@ -13,6 +13,7 @@ impl Default for Health {
         Self {
             value: 3,
             max_health: 3,
+            previous_value: 3,
         }
     }
 }
@@ -22,15 +23,22 @@ impl Health {
         Self {
             value,
             max_health: value,
+            previous_value: value,
         }
     }
 
     pub fn damage(&mut self, value: i16) {
+        self.previous_value = self.value;
         self.value = (self.value - value).min(self.max_health);
     }
 
     pub fn heal(&mut self, value: i16) {
+        self.previous_value = self.value;
         self.value = (self.value + value).min(self.max_health);
+    }
+
+    pub fn difference(&self) -> i16 {
+        self.value - self.previous_value
     }
 }
 

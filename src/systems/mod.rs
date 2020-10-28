@@ -9,6 +9,7 @@ pub mod drag_selection;
 pub mod drone;
 pub mod faction;
 pub mod health;
+pub mod health_numbers;
 pub mod selection;
 pub mod target_indicator;
 pub mod ui;
