@@ -8,6 +8,7 @@ edition = "2018"
 bevy = { git = "https://github.com/bevyengine/bevy", branch = "master" }
 bevy_mod_picking = { git = "https://github.com/aevyrie/bevy_mod_picking", branch = "master" }
 bevy_contrib_colors = { git = "https://github.com/guimcaballero/bevy_contrib_colors", branch = "master" }
+rand = "0.7.3"
 
 [patch.crates-io]
 bevy = { git = "https://github.com/bevyengine/bevy", branch = "master"}

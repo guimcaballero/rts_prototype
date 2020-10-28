@@ -1,12 +1,13 @@
 use crate::systems::{camera::*, health::*, ui::*};
 use bevy::prelude::*;
+use rand::Rng;
 
 struct HealthDifferenceNumber {
     should_despawn_at: f64,
 }
 
-const TEXT_LIFETIME: f64 = 1.;
-const TEXT_SPEED: f32 = 1.;
+const TEXT_LIFETIME: f64 = 0.5;
+const TEXT_SPEED: f32 = 10.;
 
 fn spawn_health_numbers(
     mut commands: Commands,
@@ -18,6 +19,8 @@ fn spawn_health_numbers(
     mut query: Query<(Mutated<Health>, &Transform)>,
 ) {
     if let Some(font) = fonts.get(assets.font.clone()) {
+        let mut rng = rand::thread_rng();
+
         for (health, transform) in &mut query.iter() {
             let diff = health.difference();
 
@@ -38,6 +41,14 @@ fn spawn_health_numbers(
             );
             let text_handle = textures.add(text);
 
+            let position_offset = Vec3::new(
+                rng.gen_range(-0.5, 0.5),
+                rng.gen_range(1.5, 2.5),
+                rng.gen_range(0.5, 1.5),
+            );
+
+            let scale = 0.03 + (0.14 - 0.03) * ((diff.abs() as f32 - 1.) / (30. - 1.));
+
             commands
                 .spawn(SpriteComponents {
                     material: color_materials.add(text_handle.into()),
@@ -47,9 +58,8 @@ fn spawn_health_numbers(
                         ..Default::default()
                     },
                     transform: Transform {
-                        // TODO Randomize position a bit
-                        translation: transform.translation + Vec3::new(0., 2., 0.),
-                        scale: Vec3::new(-0.03, 0.03, 0.03),
+                        translation: transform.translation + position_offset,
+                        scale: Vec3::new(-scale, scale, scale),
                         ..Default::default()
                     },
                     ..Default::default()
