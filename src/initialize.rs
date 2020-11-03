@@ -33,6 +33,7 @@ pub fn setup(
         .spawn(UiCameraComponents::default());
 
     let walker_mesh = meshes.add(Mesh::from(shape::Cube { size: 1.0 }));
+    let big_walker_mesh = meshes.add(Mesh::from(shape::Cube { size: 5.0 }));
     let material = materials.add(Tailwind::RED400.into());
     for i in 0..5 {
         for j in 0..5 {
@@ -47,7 +48,7 @@ pub fn setup(
 
     create_tp_healer(
         &mut commands,
-        walker_mesh,
+        big_walker_mesh,
         materials.add(Tailwind::RED700.into()),
         Vec3::new(20.0, 0.0, 20.0),
     );
@@ -118,7 +119,7 @@ fn create_tp_healer(
         .spawn(PbrComponents {
             mesh,
             material,
-            transform: Transform::from_translation(Vec3::new(position.x(), 1.0, position.z())),
+            transform: Transform::from_translation(Vec3::new(position.x(), 5.0, position.z())),
             ..Default::default()
         })
         .with(SelectableBuilder::default())
@@ -128,6 +129,7 @@ fn create_tp_healer(
                 speed: 0.3,
                 ..Default::default()
             },
+            size: UnitSize(5.),
             health: Health::new(10),
             abilities: UnitAbilities {
                 abilities: vec![
@@ -187,6 +189,7 @@ fn create_drone(
             ..UnitBundle::default()
         })
         .with_bundle(DroneBundle::default())
+        .with(attack::Ranged::default())
         .current_entity()
         .unwrap()
 }

@@ -8,7 +8,7 @@ impl Default for Unit {
     fn default() -> Self {
         Self {
             speed: 0.1,
-            social_distance: 1.5,
+            social_distance: 1.6,
         }
     }
 }
@@ -31,14 +31,22 @@ impl TargetPosition {
 }
 
 // Moves towards the target while it's not selected
-fn unit_movement(mut query: Query<(&Unit, &mut TargetPosition, &mut Transform, Entity)>) {
+fn unit_movement(
+    mut query: Query<(
+        &Unit,
+        &mut TargetPosition,
+        &mut Transform,
+        Entity,
+        &UnitSize,
+    )>,
+) {
     // TODO Do something to divide by space or something
     let mut unit_positions = Vec::new();
-    for (unit, _, transform, entity) in &mut query.iter() {
-        unit_positions.push((entity, transform.translation, unit.social_distance));
+    for (unit, _, transform, entity, size) in &mut query.iter() {
+        unit_positions.push((entity, transform.translation, unit.social_distance * size.0));
     }
 
-    for (unit, mut target, mut transform, entity) in &mut query.iter() {
+    for (unit, mut target, mut transform, entity, size) in &mut query.iter() {
         let translation = transform.translation;
         let mut velocity = Vec3::zero();
 
@@ -50,7 +58,7 @@ fn unit_movement(mut query: Query<(&Unit, &mut TargetPosition, &mut Transform, E
             if *other_entity != entity {
                 let difference = translation - *other_translation;
                 let distance_squared = difference.length_squared();
-                let minimum_distance = unit.social_distance + social_distance;
+                let minimum_distance = unit.social_distance * size.0 + social_distance;
 
                 if distance_squared < minimum_distance * minimum_distance {
                     units_nearby += 1;
@@ -60,6 +68,9 @@ fn unit_movement(mut query: Query<(&Unit, &mut TargetPosition, &mut Transform, E
                 }
             }
         }
+
+        // Setting vertical displacement to 0 so that big units don't move up
+        separation.set_y(0.0);
         velocity += separation;
 
         // Move towards target
@@ -82,6 +93,13 @@ fn unit_movement(mut query: Query<(&Unit, &mut TargetPosition, &mut Transform, E
         }
 
         transform.translation += velocity;
+    }
+}
+
+pub struct UnitSize(pub f32);
+impl Default for UnitSize {
+    fn default() -> Self {
+        Self(1.)
     }
 }
 

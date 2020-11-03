@@ -1,4 +1,8 @@
-use crate::systems::{ability::*, selection_circle::*, unit::TargetPosition};
+use crate::systems::{
+    ability::*,
+    selection_circle::*,
+    unit::{TargetPosition, UnitSize},
+};
 use bevy::prelude::*;
 use bevy_mod_picking::*;
 
@@ -21,9 +25,9 @@ pub struct SelectableBuilder;
 fn selectable_builder(
     mut commands: Commands,
     resource: Res<SelectionCircleMaterial>,
-    mut query: Query<(Entity, &SelectableBuilder)>,
+    mut query: Query<(Entity, &SelectableBuilder, &UnitSize)>,
 ) {
-    for (entity, _) in &mut query.iter() {
+    for (entity, _, size) in &mut query.iter() {
         let circle = commands
             .spawn(SpriteComponents {
                 material: resource.circle_material.clone(),
@@ -38,7 +42,7 @@ fn selectable_builder(
                 },
                 transform: Transform {
                     translation: Vec3::new(0.0, 0.1, 0.0),
-                    scale: Vec3::splat(0.03),
+                    scale: Vec3::splat(0.03 * size.0),
                     ..Default::default()
                 },
                 ..Default::default()

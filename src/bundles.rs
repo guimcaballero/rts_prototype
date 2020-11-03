@@ -3,7 +3,7 @@ use crate::systems::{
     drone::Drone,
     faction::Faction,
     health::Health,
-    unit::{TargetPosition, Unit},
+    unit::{TargetPosition, Unit, UnitSize},
     walker::Walker,
 };
 use bevy::prelude::*;
@@ -17,6 +17,7 @@ pub struct UnitBundle {
     pub pickable_mesh: PickableMesh,
     pub faction: Faction,
     pub abilities: UnitAbilities,
+    pub size: UnitSize,
 }
 
 #[derive(Bundle, Default)]
