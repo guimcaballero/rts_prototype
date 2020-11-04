@@ -36,7 +36,7 @@ impl Bullet {
 }
 
 fn move_bullet(time: Res<Time>, mut query: Query<(&Bullet, &mut Transform)>) {
-    for (bullet, mut transform) in &mut query.iter() {
+    for (bullet, mut transform) in query.iter_mut() {
         transform.translation += BULLET_SPEED * bullet.direction * time.delta_seconds;
     }
 }
@@ -44,9 +44,9 @@ fn move_bullet(time: Res<Time>, mut query: Query<(&Bullet, &mut Transform)>) {
 fn kill_after_lifetime_over(
     mut commands: Commands,
     time: Res<Time>,
-    mut query: Query<(&Bullet, Entity)>,
+    query: Query<(&Bullet, Entity)>,
 ) {
-    for (bullet, entity) in &mut query.iter() {
+    for (bullet, entity) in query.iter() {
         if time.seconds_since_startup >= bullet.should_despawn_at {
             commands.despawn(entity);
         }
@@ -55,13 +55,13 @@ fn kill_after_lifetime_over(
 
 fn bullet_collision(
     mut commands: Commands,
-    mut bullet_query: Query<(&Bullet, &Transform, &Faction, Entity)>,
+    bullet_query: Query<(&Bullet, &Transform, &Faction, Entity)>,
     mut unit_query: Query<(&Unit, &Transform, &mut Health, &Faction)>,
 ) {
-    for (_, bullet_transform, faction, bullet_entity) in &mut bullet_query.iter() {
+    for (_, bullet_transform, faction, bullet_entity) in bullet_query.iter() {
         let bullet_translation = bullet_transform.translation;
 
-        for (_, enemy_transform, mut health, enemy_faction) in &mut unit_query.iter() {
+        for (_, enemy_transform, mut health, enemy_faction) in unit_query.iter_mut() {
             // Skip units in same faction
             if enemy_faction.faction == faction.faction {
                 continue;

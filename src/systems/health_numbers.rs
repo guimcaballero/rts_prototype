@@ -16,12 +16,12 @@ fn spawn_health_numbers(
     fonts: Res<Assets<Font>>,
     mut textures: ResMut<Assets<Texture>>,
     mut color_materials: ResMut<Assets<ColorMaterial>>,
-    mut query: Query<(Mutated<Health>, &Transform)>,
+    query: Query<(Mutated<Health>, &Transform)>,
 ) {
     if let Some(font) = fonts.get(assets.font.clone()) {
         let mut rng = rand::thread_rng();
 
-        for (health, transform) in &mut query.iter() {
+        for (health, transform) in query.iter() {
             let diff = health.difference();
 
             if diff == 0 {
@@ -74,12 +74,11 @@ fn spawn_health_numbers(
 fn move_numbers_up_and_rotate(
     time: Res<Time>,
     mut query: Query<(&mut Transform, &HealthDifferenceNumber)>,
-    mut camera_query: Query<(&CameraFollow, &Transform)>,
+    camera_query: Query<(&CameraFollow, &Transform)>,
 ) {
-    let mut cam_temp = camera_query.iter();
-    let (_camera, camera_transform) = cam_temp.iter().next().unwrap();
+    let (_camera, camera_transform) = camera_query.iter().next().unwrap();
 
-    for (mut transform, _) in &mut query.iter() {
+    for (mut transform, _) in query.iter_mut() {
         transform.look_at(camera_transform.translation, Vec3::unit_y());
         transform.translation += Vec3::unit_y() * time.delta_seconds * TEXT_SPEED;
     }
@@ -88,7 +87,7 @@ fn move_numbers_up_and_rotate(
 fn despawn_numbers(
     mut commands: Commands,
     time: Res<Time>,
-    mut query: Query<(Entity, &HealthDifferenceNumber)>,
+    query: Query<(Entity, &HealthDifferenceNumber)>,
 ) {
     for (entity, number) in &mut query.iter() {
         if time.seconds_since_startup >= number.should_despawn_at {

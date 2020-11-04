@@ -22,9 +22,9 @@ fn update_camera_position(
     mut camera_query: Query<(&Camera, &CameraFollow, &mut Transform)>,
     has_camera_query: Query<(&CanHaveCamera, &Transform)>,
 ) {
-    for (_, camera_follow, mut transform) in &mut camera_query.iter() {
+    for (_, camera_follow, mut transform) in camera_query.iter_mut() {
         if let Some(following) = camera_follow.entity {
-            if let Ok(parent_transform) = has_camera_query.get::<Transform>(following) {
+            if let Ok(parent_transform) = has_camera_query.get_component::<Transform>(following) {
                 let new_translation =
                     parent_transform.translation + camera_follow.translation_offset;
                 let new_rotation = parent_transform.rotation * camera_follow.rotation_offset;
@@ -39,7 +39,7 @@ fn update_camera_position(
 }
 
 fn reset_unit_target_if_it_has_camera(
-    mut camera_query: Query<&CameraFollow>,
+    camera_query: Query<&CameraFollow>,
     mut query: Query<(
         Entity,
         &CanHaveCamera,
@@ -49,7 +49,7 @@ fn reset_unit_target_if_it_has_camera(
     )>,
 ) {
     for camera_follow in &mut camera_query.iter() {
-        for (entity, _can_have_camera, mut target, mut selectable, mut draw) in &mut query.iter() {
+        for (entity, _can_have_camera, mut target, mut selectable, mut draw) in query.iter_mut() {
             // TODO This will act weird if there is more than one camera
             if Some(entity) == camera_follow.entity {
                 target.pos = None;
@@ -78,14 +78,12 @@ fn switch_camera_to_entity(
     }
 
     // Get the entity selected
-    if let Some(top_pick) = pick_state.top(PickGroup::default()) {
-        let entity = top_pick.entity();
-
+    if let Some((top_entity, _intersection)) = pick_state.top(Group::default()) {
         // Check if it's in the CanHaveCamera query
-        if query.get::<CanHaveCamera>(entity).is_ok() {
-            for mut camera_follow in &mut camera_query.iter() {
+        if query.get_component::<CanHaveCamera>(*top_entity).is_ok() {
+            for mut camera_follow in camera_query.iter_mut() {
                 camera_follow.previous_entity = camera_follow.entity;
-                camera_follow.entity = Some(entity);
+                camera_follow.entity = Some(*top_entity);
                 println!("Changing entity in camera");
             }
         }
@@ -104,10 +102,13 @@ fn switch_camera_back(
         return;
     }
 
-    for mut camera_follow in &mut camera_query.iter() {
+    for mut camera_follow in camera_query.iter_mut() {
         if let Some(prev) = camera_follow.previous_entity {
             // Check that the unit is alive
-            if can_have_camera_query.get::<CanHaveCamera>(prev).is_ok() {
+            if can_have_camera_query
+                .get_component::<CanHaveCamera>(prev)
+                .is_ok()
+            {
                 camera_follow.previous_entity = camera_follow.entity;
                 camera_follow.entity = Some(prev);
             }
@@ -120,18 +121,21 @@ fn switch_camera_back(
 /// Switches the camera to the previous or a random entity if the current one dies
 fn switch_after_current_unit_dies(
     mut camera_query: Query<&mut CameraFollow>,
-    mut can_have_camera_query: Query<(&CanHaveCamera, &Unit, Entity)>,
+    can_have_camera_query: Query<(&CanHaveCamera, &Unit, Entity)>,
 ) {
-    for mut camera_follow in &mut camera_query.iter() {
+    for mut camera_follow in camera_query.iter_mut() {
         if let Some(following) = camera_follow.entity {
             // If the unit is not in the query, it has died, so we need to change it
             if can_have_camera_query
-                .get::<CanHaveCamera>(following)
+                .get_component::<CanHaveCamera>(following)
                 .is_err()
             {
                 // Check if prev_entity is valid, and go to that one if it is
                 if let Some(prev) = camera_follow.previous_entity {
-                    if can_have_camera_query.get::<CanHaveCamera>(prev).is_ok() {
+                    if can_have_camera_query
+                        .get_component::<CanHaveCamera>(prev)
+                        .is_ok()
+                    {
                         camera_follow.entity = camera_follow.previous_entity;
                         continue; // Go to next camera
                     }

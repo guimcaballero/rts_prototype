@@ -42,7 +42,7 @@ impl Health {
     }
 }
 
-fn kill_if_health_0(mut commands: Commands, mut query: Query<(Mutated<Health>, Entity)>) {
+fn kill_if_health_0(mut commands: Commands, query: Query<(Mutated<Health>, Entity)>) {
     for (health, entity) in &mut query.iter() {
         if health.value <= 0 {
             commands.insert_one(entity, Dead {});
@@ -54,9 +54,9 @@ pub struct Dead;
 fn remove_if_dead(
     mut commands: Commands,
     mut buttons: ResMut<AvailableButtons>,
-    mut query: Query<(&Dead, Entity, Option<&Selectable>, Option<&UnitAbilities>)>,
+    query: Query<(&Dead, Entity, Option<&Selectable>, Option<&UnitAbilities>)>,
 ) {
-    for (_dead, entity, option_selectable, option_abilities) in &mut query.iter() {
+    for (_dead, entity, option_selectable, option_abilities) in query.iter() {
         // If it's a selectable, despawn it's circle too
         if let Some(selectable) = option_selectable {
             commands.despawn(selectable.circle);

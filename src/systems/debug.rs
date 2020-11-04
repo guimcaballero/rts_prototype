@@ -10,10 +10,10 @@ fn update_debug_cursor_position(
     mut query: Query<(&DebugCursor, &mut Transform, &mut Draw)>,
 ) {
     // Set the cursor translation to the top pick's world coordinates
-    if let Some(top_pick) = pick_state.top(PickGroup::default()) {
-        let pos = *top_pick.position();
+    if let Some((_top_entity, intersection)) = pick_state.top(Group::default()) {
+        let pos = *intersection.position();
 
-        for (_, mut transform, mut draw) in &mut query.iter() {
+        for (_, mut transform, mut draw) in query.iter_mut() {
             if keyboard_input.pressed(KeyCode::P) {
                 transform.translation = pos;
                 draw.is_visible = true;

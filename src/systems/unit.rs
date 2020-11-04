@@ -42,11 +42,11 @@ fn unit_movement(
 ) {
     // TODO Do something to divide by space or something
     let mut unit_positions = Vec::new();
-    for (unit, _, transform, entity, size) in &mut query.iter() {
+    for (unit, _, transform, entity, size) in query.iter_mut() {
         unit_positions.push((entity, transform.translation, unit.social_distance * size.0));
     }
 
-    for (unit, mut target, mut transform, entity, size) in &mut query.iter() {
+    for (unit, mut target, mut transform, entity, size) in query.iter_mut() {
         let translation = transform.translation;
         let mut velocity = Vec3::zero();
 

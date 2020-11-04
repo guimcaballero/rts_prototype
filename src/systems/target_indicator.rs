@@ -5,10 +5,10 @@ use bevy::{math::Vec3, prelude::*};
 pub struct TargetIndicator;
 fn show_target_indicator(
     mut indicator_query: Query<(&TargetIndicator, &mut Transform, &mut Draw)>,
-    mut selectable_query: Query<(&Selectable, &TargetPosition)>,
+    selectable_query: Query<(&Selectable, &TargetPosition)>,
 ) {
     let mut selections_with_target_exist = false;
-    for (selectable, target) in &mut selectable_query.iter() {
+    for (selectable, target) in selectable_query.iter() {
         // We only want selected items
         if !selectable.selected {
             continue;
@@ -18,14 +18,14 @@ fn show_target_indicator(
         if let Some(target_position) = target.pos {
             selections_with_target_exist = true;
 
-            for (_, mut transform, _) in &mut indicator_query.iter() {
+            for (_, mut transform, _) in indicator_query.iter_mut() {
                 transform.translation = Vec3::new(target_position.x(), 0.3, target_position.z());
             }
         }
     }
 
     // Toggle drawability according to if there is anything selected
-    for (_, _, mut draw) in &mut indicator_query.iter() {
+    for (_, _, mut draw) in &mut indicator_query.iter_mut() {
         draw.is_visible = selections_with_target_exist;
     }
 }

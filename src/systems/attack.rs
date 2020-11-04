@@ -28,17 +28,17 @@ fn shoot_against_enemies(
     bullet_resource: Res<BulletMeshResource>,
     mut ranged_query: Query<(&Unit, &mut Ranged, &Transform, &Faction)>,
     // This other query is so we also get all the units that aren't ranged
-    mut others_query: Query<(&Unit, &Transform, &Faction)>,
+    others_query: Query<(&Unit, &Transform, &Faction)>,
 ) {
     let mut unit_positions = Vec::new();
-    for (_, _, transform, faction) in &mut ranged_query.iter() {
+    for (_, _, transform, faction) in ranged_query.iter_mut() {
         unit_positions.push((transform.translation, faction.faction));
     }
-    for (_, transform, faction) in &mut others_query.iter() {
+    for (_, transform, faction) in others_query.iter() {
         unit_positions.push((transform.translation, faction.faction));
     }
 
-    for (_, mut ranged, transform, faction) in &mut ranged_query.iter() {
+    for (_, mut ranged, transform, faction) in ranged_query.iter_mut() {
         let translation = transform.translation;
         if ranged.can_shoot(time.seconds_since_startup) {
             // Get the closest enemy

@@ -57,8 +57,8 @@ fn start_drag_select(
 
     // If we start clicking, save the initial_position
     if mouse_button_inputs.just_pressed(MouseButton::Left) {
-        if let Some(top_pick) = pick_state.top(PickGroup::default()) {
-            let pos = top_pick.position();
+        if let Some((_top_entity, intersection)) = pick_state.top(Group::default()) {
+            let pos = intersection.position();
             selection_state.initial_position = Some(*pos);
         } else {
             // if there is no top pick, set it to none
@@ -104,8 +104,8 @@ fn drag_select(
     }
 
     if let Some(initial_position) = selection_state.initial_position {
-        if let Some(top_pick) = pick_state.top(PickGroup::default()) {
-            let current_position = *top_pick.position();
+        if let Some((_top_entity, intersection)) = pick_state.top(Group::default()) {
+            let current_position = *intersection.position();
 
             // Fix for clicking
             if (current_position - initial_position).length() < 0.1 {
@@ -113,18 +113,18 @@ fn drag_select(
             }
 
             // Modify the drag rectangle
-            for (mesh_handle, _, mut draw) in &mut drag_selection_rectangle.iter() {
+            for (mesh_handle, _, mut draw) in drag_selection_rectangle.iter_mut() {
                 draw.is_visible = true;
                 let mesh_option = meshes.get_mut(mesh_handle);
                 if let Some(mut mesh) = mesh_option {
-                    mesh.attributes = rectangle_attributes(initial_position, current_position);
+                    set_rectangle_attributes(&mut mesh, initial_position, current_position);
                 }
             }
 
             selection_state.current_position = Some(current_position);
         }
     } else {
-        for (_, _, mut draw) in &mut drag_selection_rectangle.iter() {
+        for (_, _, mut draw) in drag_selection_rectangle.iter_mut() {
             draw.is_visible = false;
         }
     }
@@ -146,7 +146,7 @@ fn select_inside_rectangle(
     if let Some(initial_position) = selection_state.initial_position {
         if let Some(current_position) = selection_state.current_position {
             // Select the units
-            for (mut selectable, transform) in &mut query.iter() {
+            for (mut selectable, transform) in query.iter_mut() {
                 // Mark the units as selected if they are inside the rectangle
                 selectable.set_selected(
                     is_between_two_values(
@@ -174,7 +174,7 @@ fn heal_area_ability(
     }
 
     if let Some((beginning, end)) = selection_state.last_rectangle {
-        for (mut health, _unit, transform) in &mut query.iter() {
+        for (mut health, _unit, transform) in query.iter_mut() {
             // Heal the units inside the rectangle
             if is_between_two_values(transform.translation.x(), beginning.x(), end.x())
                 && is_between_two_values(transform.translation.z(), beginning.z(), end.z())

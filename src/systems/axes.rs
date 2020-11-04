@@ -3,8 +3,7 @@ use bevy::{
     prelude::*,
     render::{
         camera::Camera,
-        mesh::{Indices, Mesh, VertexAttribute},
-        pipeline::PrimitiveTopology,
+        mesh::{Indices, Mesh},
     },
 };
 
@@ -71,15 +70,12 @@ impl From<Cone> for Mesh {
             ]);
         }
 
-        Mesh {
-            primitive_topology: PrimitiveTopology::TriangleList,
-            attributes: vec![
-                VertexAttribute::position(positions),
-                VertexAttribute::normal(normals),
-                VertexAttribute::uv(uvs),
-            ],
-            indices: Some(Indices::U32(indices)),
-        }
+        let mut mesh = Mesh::new(bevy::render::pipeline::PrimitiveTopology::TriangleList);
+        mesh.set_indices(Some(Indices::U32(indices)));
+        mesh.set_attribute(Mesh::ATTRIBUTE_POSITION, positions.into());
+        mesh.set_attribute(Mesh::ATTRIBUTE_NORMAL, normals.into());
+        mesh.set_attribute(Mesh::ATTRIBUTE_UV_0, uvs.into());
+        mesh
     }
 }
 
@@ -171,15 +167,12 @@ impl From<Cylinder> for Mesh {
             ]);
         }
 
-        Mesh {
-            primitive_topology: PrimitiveTopology::TriangleList,
-            attributes: vec![
-                VertexAttribute::position(positions),
-                VertexAttribute::normal(normals),
-                VertexAttribute::uv(uvs),
-            ],
-            indices: Some(Indices::U32(indices)),
-        }
+        let mut mesh = Mesh::new(bevy::render::pipeline::PrimitiveTopology::TriangleList);
+        mesh.set_indices(Some(Indices::U32(indices)));
+        mesh.set_attribute(Mesh::ATTRIBUTE_POSITION, positions.into());
+        mesh.set_attribute(Mesh::ATTRIBUTE_NORMAL, normals.into());
+        mesh.set_attribute(Mesh::ATTRIBUTE_UV_0, uvs.into());
+        mesh
     }
 }
 
@@ -194,13 +187,13 @@ impl Plugin for AxesPlugin {
 
 struct AxesTag;
 fn axes_system(
-    mut camera_query: Query<(&Camera, &Transform)>,
+    camera_query: Query<(&Camera, &Transform)>,
     mut axes_query: Query<(&AxesTag, &mut Transform)>,
 ) {
     let mut cam_temp = camera_query.iter();
-    let (camera, camera_transform) = cam_temp.iter().next().unwrap();
-    let mut axes_temp = axes_query.iter();
-    let (_, mut axes_transform) = axes_temp.iter().next().unwrap();
+    let (camera, camera_transform) = cam_temp.next().unwrap();
+    let mut axes_temp = axes_query.iter_mut();
+    let (_, mut axes_transform) = axes_temp.next().unwrap();
 
     let view_matrix = camera_transform.compute_matrix();
     let projection_matrix = camera.projection_matrix;

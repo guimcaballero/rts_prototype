@@ -25,7 +25,7 @@ pub struct SelectableBuilder;
 fn selectable_builder(
     mut commands: Commands,
     resource: Res<SelectionCircleMaterial>,
-    mut query: Query<(Entity, &SelectableBuilder, &UnitSize)>,
+    query: Query<(Entity, &SelectableBuilder, &UnitSize)>,
 ) {
     for (entity, _, size) in &mut query.iter() {
         let circle = commands
@@ -81,20 +81,17 @@ fn select_units(
         return;
     }
 
-    if let Some(top_pick) = pick_state.top(PickGroup::default()) {
+    if let Some((top_entity, _intersection)) = pick_state.top(Group::default()) {
         if !keyboard_input.pressed(KeyCode::LControl) {
             // Deselect all units
-            for mut selectable in &mut query.iter() {
+            for mut selectable in query.iter_mut() {
                 selectable.set_selected(false);
             }
         }
 
         // Select the top pick
-        let entity = top_pick.entity();
-        if let Ok(mut selectable) = query.entity(entity) {
-            if let Some(mut unit) = selectable.get() {
-                unit.set_selected(true);
-            }
+        if let Ok(mut selectable) = query.get_mut(*top_entity) {
+            selectable.set_selected(true);
         }
     }
 }
@@ -111,10 +108,10 @@ fn set_target_for_selected(
 
     if mouse_button_inputs.just_pressed(MouseButton::Right) {
         // Get the world position
-        if let Some(top_pick) = pick_state.top(PickGroup::default()) {
-            let pos = top_pick.position();
+        if let Some((_top_entity, intersection)) = pick_state.top(Group::default()) {
+            let pos = intersection.position();
 
-            for (selectable, mut target) in &mut query.iter() {
+            for (selectable, mut target) in query.iter_mut() {
                 if selectable.selected {
                     target.update_to_vec(pos);
                 }

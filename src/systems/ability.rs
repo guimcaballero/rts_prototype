@@ -1,8 +1,7 @@
 use crate::systems::{health::*, selection::*, ui::*};
 use crate::unit::Unit;
 use bevy::prelude::*;
-use bevy_mod_picking::PickGroup;
-use bevy_mod_picking::PickState;
+use bevy_mod_picking::*;
 
 #[derive(PartialEq, Debug)]
 pub enum Ability {
@@ -37,7 +36,7 @@ pub struct AbilityButton {
 
 fn add_ability_buttons_for_selected_units(
     mut buttons: ResMut<AvailableButtons>,
-    mut query: Query<(Mutated<Selectable>, &UnitAbilities, Entity)>,
+    query: Query<(Mutated<Selectable>, &UnitAbilities, Entity)>,
 ) {
     for (selectable, abilities, entity) in &mut query.iter() {
         if selectable.selected && !selectable.previously_selected {
@@ -64,16 +63,16 @@ fn teleport_ability(
     pick_state: Res<PickState>,
     mouse_button_inputs: Res<Input<MouseButton>>,
     mut ability: ResMut<CurrentAbility>,
-    query: Query<(&mut Transform, &Unit)>,
+    mut query: Query<(&mut Transform, &Unit)>,
 ) {
     if let Ability::Teleport(entity) = ability.ability {
         if mouse_button_inputs.just_pressed(MouseButton::Right) {
             // Get the world position
-            if let Some(top_pick) = pick_state.top(PickGroup::default()) {
-                let mut pos = *top_pick.position();
+            if let Some((_top_entity, intersection)) = pick_state.top(Group::default()) {
+                let mut pos = *intersection.position();
                 pos.set_y(1.);
 
-                if let Ok(mut transform) = query.get_mut::<Transform>(entity) {
+                if let Ok(mut transform) = query.get_component_mut::<Transform>(entity) {
                     transform.translation = pos;
                 }
             }
@@ -87,7 +86,7 @@ fn heal_unit_ability(
     pick_state: Res<PickState>,
     mouse_button_inputs: Res<Input<MouseButton>>,
     mut ability: ResMut<CurrentAbility>,
-    query: Query<(&mut Health, &Unit)>,
+    mut query: Query<(&mut Health, &Unit)>,
 ) {
     if Ability::HealUnit != ability.ability {
         return;
@@ -95,8 +94,8 @@ fn heal_unit_ability(
 
     if mouse_button_inputs.just_pressed(MouseButton::Left) {
         // Get the world position
-        if let Some(top_pick) = pick_state.top(PickGroup::default()) {
-            if let Ok(mut health) = query.get_mut::<Health>(top_pick.entity()) {
+        if let Some((top_entity, _intersection)) = pick_state.top(Group::default()) {
+            if let Ok(mut health) = query.get_component_mut::<Health>(*top_entity) {
                 health.heal(20);
             }
             ability.ability = Ability::Select;

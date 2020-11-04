@@ -22,7 +22,7 @@ fn main() {
             height: 1600,
             ..Default::default()
         })
-        .add_default_plugins()
+        .add_plugins(DefaultPlugins)
         // .add_plugin(debug::DebugPlugin)
         .add_plugin(PickingPlugin)
         .add_plugin(selection::SelectionPlugin)
@@ -32,7 +32,7 @@ fn main() {
         .add_plugin(unit::UnitPlugin)
         .add_plugin(walker::WalkerPlugin)
         .add_plugin(aliens::AliensPlugin)
-        .add_plugin(axes::AxesPlugin)
+        // .add_plugin(axes::AxesPlugin)
         .add_plugin(target_indicator::TargetIndicatorPlugin)
         .add_plugin(attack::AttackPlugin)
         .add_plugin(bullet::BulletPlugin)

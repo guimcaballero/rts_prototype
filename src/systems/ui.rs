@@ -194,16 +194,18 @@ fn button_system(
     ability: ResMut<CurrentAbility>,
     available_buttons: ResMut<AvailableButtons>,
     mut interaction_query: Query<(&mut AbilityButton, Mutated<Interaction>)>,
-    circle_query: Query<&mut SelectionCircle>,
+    mut circle_query: Query<&mut SelectionCircle>,
 ) {
-    for (ability_button, interaction) in &mut interaction_query.iter() {
+    for (ability_button, interaction) in interaction_query.iter_mut() {
         if *interaction == Interaction::Clicked {
             (ability_button.callback)(commands, ability, available_buttons, ability_button.data);
             return;
         }
 
         if let Some(associated_entity) = ability_button.data.associated_circle {
-            if let Ok(mut circle) = circle_query.get_mut::<SelectionCircle>(associated_entity) {
+            if let Ok(mut circle) =
+                circle_query.get_component_mut::<SelectionCircle>(associated_entity)
+            {
                 circle.unit_highlighted = *interaction == Interaction::Hovered;
             }
         }
@@ -216,7 +218,7 @@ fn block_picking_under_blockers(
     mut interaction_query: Query<(&Button, &Interaction, &PickingBlocker)>,
 ) {
     let mut some_is_hovered = false;
-    for (_button, interaction, _) in &mut interaction_query.iter() {
+    for (_button, interaction, _) in interaction_query.iter_mut() {
         match *interaction {
             Interaction::Clicked | Interaction::Hovered => {
                 some_is_hovered = true;
@@ -263,7 +265,7 @@ fn init_ability_text(mut commands: Commands, assets: Res<UiAssetsResource>) {
 }
 
 fn ability_text_update(ability: Res<CurrentAbility>, mut query: Query<(&mut Text, &AbilityText)>) {
-    for (mut text, _tag) in &mut query.iter() {
+    for (mut text, _tag) in query.iter_mut() {
         text.value = format!("Ability: {}", ability.ability);
     }
 }
