@@ -1,4 +1,4 @@
-use crate::systems::{camera::*, health::*, ui::*};
+use crate::systems::{camera::*, health::*, time::*, ui::*};
 use bevy::prelude::*;
 use rand::Rng;
 
@@ -11,7 +11,7 @@ const TEXT_SPEED: f32 = 10.;
 
 fn spawn_health_numbers(
     mut commands: Commands,
-    time: Res<Time>,
+    time: Res<ControlledTime>,
     assets: Res<UiAssetsResource>,
     fonts: Res<Assets<Font>>,
     mut textures: ResMut<Assets<Texture>>,
@@ -72,7 +72,7 @@ fn spawn_health_numbers(
 }
 
 fn move_numbers_up_and_rotate(
-    time: Res<Time>,
+    time: Res<ControlledTime>,
     mut query: Query<(&mut Transform, &HealthDifferenceNumber)>,
     camera_query: Query<(&CameraFollow, &Transform)>,
 ) {
@@ -86,7 +86,7 @@ fn move_numbers_up_and_rotate(
 
 fn despawn_numbers(
     mut commands: Commands,
-    time: Res<Time>,
+    time: Res<ControlledTime>,
     query: Query<(Entity, &HealthDifferenceNumber)>,
 ) {
     for (entity, number) in &mut query.iter() {

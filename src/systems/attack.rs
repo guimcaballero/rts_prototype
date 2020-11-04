@@ -1,4 +1,4 @@
-use crate::systems::{bullet::*, faction::*, unit::*};
+use crate::systems::{bullet::*, faction::*, time::*, unit::*};
 use bevy::{math::Vec3, prelude::*};
 
 pub struct Ranged {
@@ -24,7 +24,7 @@ impl Ranged {
 
 fn shoot_against_enemies(
     mut commands: Commands,
-    time: Res<Time>,
+    time: Res<ControlledTime>,
     bullet_resource: Res<BulletMeshResource>,
     mut ranged_query: Query<(&Unit, &mut Ranged, &Transform, &Faction)>,
     // This other query is so we also get all the units that aren't ranged
@@ -69,7 +69,7 @@ fn shoot_against_enemies(
                 Bullet::spawn(
                     &mut commands,
                     &bullet_resource,
-                    &time,
+                    time.seconds_since_startup,
                     translation,
                     -vector.normalize(),
                     faction.faction,

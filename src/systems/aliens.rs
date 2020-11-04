@@ -1,6 +1,6 @@
 use crate::{
     bundles::*,
-    systems::{attack, faction::*, unit::*},
+    systems::{attack, faction::*, time::*, unit::*},
 };
 use bevy::{math::Vec3, prelude::*};
 use bevy_contrib_colors::Tailwind;
@@ -8,7 +8,7 @@ use bevy_contrib_colors::Tailwind;
 struct SpawnTimer(Timer);
 fn create_random_aliens(
     mut commands: Commands,
-    time: Res<Time>,
+    time: Res<ControlledTime>,
     mut timer: ResMut<SpawnTimer>,
     resource: Res<AlienMeshResource>,
 ) {

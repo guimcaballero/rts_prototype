@@ -1,5 +1,5 @@
 use crate::helpers::movement::*;
-use crate::systems::camera::*;
+use crate::systems::{camera::*, time::*};
 use bevy::{input::mouse::MouseMotion, prelude::*, render::camera::Camera};
 
 // From https://github.com/mcpar-land/bevy_fly_camera/blob/master/src/lib.rs
@@ -38,7 +38,7 @@ impl Default for Drone {
 
 /// Move the Drone according to keys pressed
 fn drone_movement_system(
-    time: Res<Time>,
+    time: Res<ControlledTime>,
     keyboard_input: Res<Input<KeyCode>>,
     camera_query: Query<(&Camera, &CameraFollow)>,
     mut can_have_camera_query: Query<(&mut Drone, &CanHaveCamera, &mut Transform)>,
@@ -96,7 +96,9 @@ fn drone_movement_system(
                     options.velocity.set_y(0.);
                 }
 
-                transform.translation += options.velocity;
+                if time.delta_seconds > 0. {
+                    transform.translation += options.velocity;
+                }
             }
         }
     }
@@ -104,7 +106,7 @@ fn drone_movement_system(
 
 /// Rotate according to mouse if the LShift key is pressed
 fn drone_mouse_rotation_system(
-    time: Res<Time>,
+    time: Res<Time>, // Using real time because we always want to be able to rotate
     mut state: ResMut<State>,
     mouse_motion_events: Res<Events<MouseMotion>>,
     keyboard_input: Res<Input<KeyCode>>,

@@ -1,3 +1,4 @@
+use crate::systems::time::*;
 use bevy::{math::Vec3, prelude::*};
 
 pub struct Unit {
@@ -7,7 +8,7 @@ pub struct Unit {
 impl Default for Unit {
     fn default() -> Self {
         Self {
-            speed: 0.1,
+            speed: 7.0,
             social_distance: 1.6,
         }
     }
@@ -32,6 +33,7 @@ impl TargetPosition {
 
 // Moves towards the target while it's not selected
 fn unit_movement(
+    time: Res<ControlledTime>,
     mut query: Query<(
         &Unit,
         &mut TargetPosition,
@@ -79,7 +81,7 @@ fn unit_movement(
             direction.set_y(0.0);
 
             if direction.length() > 0.3 + units_nearby as f32 {
-                let direction = direction.normalize() * unit.speed;
+                let direction = direction.normalize() * unit.speed * time.delta_seconds;
                 velocity += direction;
             } else {
                 // When we reach the target, remove it
@@ -92,7 +94,9 @@ fn unit_movement(
             velocity.set_y(0.);
         }
 
-        transform.translation += velocity;
+        if time.delta_seconds > 0. {
+            transform.translation += velocity;
+        }
     }
 }
 

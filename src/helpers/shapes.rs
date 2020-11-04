@@ -1,7 +1,6 @@
 use bevy::{prelude::*, render::mesh::Indices};
 
 pub fn rectangle_mesh() -> Mesh {
-    println!("rectangle");
     let mut mesh = Mesh::new(bevy::render::pipeline::PrimitiveTopology::TriangleList);
     set_rectangle_attributes(&mut mesh, Vec3::zero(), Vec3::zero());
     mesh.set_indices(Some(Indices::U32(Vec::from([0, 1, 2, 0, 2, 3]))));
@@ -37,7 +36,6 @@ pub fn set_rectangle_attributes(mesh: &mut Mesh, a: Vec3, b: Vec3) {
 }
 
 pub fn circle_mesh() -> Mesh {
-    println!("circle");
     let mut mesh = Mesh::new(bevy::render::pipeline::PrimitiveTopology::TriangleList);
     set_circle_attributes(&mut mesh);
     mesh.set_indices(Some(Indices::U32(vec![

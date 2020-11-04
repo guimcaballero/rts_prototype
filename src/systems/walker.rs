@@ -1,5 +1,5 @@
 use crate::helpers::movement::*;
-use crate::systems::camera::*;
+use crate::systems::{camera::*, time::*};
 use bevy::{input::mouse::MouseMotion, math::Vec3, prelude::*, render::camera::Camera};
 
 #[derive(Default)]
@@ -38,7 +38,7 @@ impl Default for Walker {
 }
 
 fn wasd_walk_for_camera_holder(
-    time: Res<Time>,
+    time: Res<ControlledTime>,
     keyboard_input: Res<Input<KeyCode>>,
     camera_query: Query<(&Camera, &CameraFollow)>,
     mut can_have_camera_query: Query<(&mut Walker, &CanHaveCamera, &mut Transform)>,
@@ -78,7 +78,9 @@ fn wasd_walk_for_camera_holder(
                         options.velocity + delta_friction
                     };
 
-                transform.translation += options.velocity;
+                if time.delta_seconds > 0. {
+                    transform.translation += options.velocity;
+                }
             }
         }
     }
@@ -86,7 +88,7 @@ fn wasd_walk_for_camera_holder(
 
 /// Rotate according to mouse if the LShift key is pressed
 fn walker_mouse_rotation_system(
-    time: Res<Time>,
+    time: Res<Time>, // Using real time because we always want to be able to rotate
     mut state: ResMut<State>,
     mouse_motion_events: Res<Events<MouseMotion>>,
     keyboard_input: Res<Input<KeyCode>>,

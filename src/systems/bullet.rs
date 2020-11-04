@@ -1,4 +1,4 @@
-use crate::systems::{faction::*, health::Health, unit::*};
+use crate::systems::{faction::*, health::Health, time::*, unit::*};
 use bevy::{math::Vec3, prelude::*};
 use bevy_contrib_colors::Tailwind;
 
@@ -14,14 +14,13 @@ impl Bullet {
     pub fn spawn(
         commands: &mut Commands,
         resource: &BulletMeshResource,
-        time: &Time,
+        seconds_since_startup: f64,
         origin: Vec3,
         direction: Vec3,
         faction: Factions,
     ) {
         commands
             .spawn(PbrComponents {
-                // TODO We should deal with this being None
                 mesh: resource.mesh.clone(),
                 material: resource.material.clone(),
                 transform: Transform::from_translation(origin),
@@ -29,13 +28,13 @@ impl Bullet {
             })
             .with(Bullet {
                 direction,
-                should_despawn_at: time.seconds_since_startup + BULLET_LIFETIME,
+                should_despawn_at: seconds_since_startup + BULLET_LIFETIME,
             })
             .with(Faction::new(faction));
     }
 }
 
-fn move_bullet(time: Res<Time>, mut query: Query<(&Bullet, &mut Transform)>) {
+fn move_bullet(time: Res<ControlledTime>, mut query: Query<(&Bullet, &mut Transform)>) {
     for (bullet, mut transform) in query.iter_mut() {
         transform.translation += BULLET_SPEED * bullet.direction * time.delta_seconds;
     }
@@ -43,7 +42,7 @@ fn move_bullet(time: Res<Time>, mut query: Query<(&Bullet, &mut Transform)>) {
 
 fn kill_after_lifetime_over(
     mut commands: Commands,
-    time: Res<Time>,
+    time: Res<ControlledTime>,
     query: Query<(&Bullet, Entity)>,
 ) {
     for (bullet, entity) in query.iter() {

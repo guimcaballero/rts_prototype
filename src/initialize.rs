@@ -96,13 +96,7 @@ fn create_walker(
         })
         .with(SelectableBuilder::default())
         .with(CanHaveCamera::default())
-        .with_bundle(UnitBundle {
-            unit: Unit {
-                speed: 0.1,
-                ..Default::default()
-            },
-            ..UnitBundle::default()
-        })
+        .with_bundle(UnitBundle::default())
         .with_bundle(WalkerBundle::default())
         .with(attack::Ranged::default())
         .current_entity()
@@ -126,7 +120,7 @@ fn create_tp_healer(
         .with(CanHaveCamera::default())
         .with_bundle(UnitBundle {
             unit: Unit {
-                speed: 0.3,
+                speed: 30.0,
                 ..Default::default()
             },
             size: UnitSize(5.),
@@ -183,7 +177,7 @@ fn create_drone(
         .with(CanHaveCamera::default())
         .with_bundle(UnitBundle {
             unit: Unit {
-                speed: 0.3,
+                speed: 30.0,
                 ..Default::default()
             },
             ..UnitBundle::default()
