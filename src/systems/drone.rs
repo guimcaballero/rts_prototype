@@ -64,7 +64,7 @@ fn drone_movement_system(
                     * options.speed;
 
                 let translation = transform.translation;
-                let y = translation.y();
+                let y = translation.y;
                 if y <= 10. {
                     accel += Vec3::unit_y() * (10. - y).abs();
                 }
@@ -92,8 +92,8 @@ fn drone_movement_system(
                     };
 
                 // If unit is on the floor, we don't allow going down
-                if translation.y() <= 1.01 && options.velocity.y() < 0. {
-                    options.velocity.set_y(0.);
+                if translation.y <= 1.01 && options.velocity.y < 0. {
+                    options.velocity.y = 0.;
                 }
 
                 if time.delta_seconds > 0. {
@@ -129,8 +129,8 @@ fn drone_mouse_rotation_system(
     for (_, camera_follow) in camera_query.iter() {
         if let Some(following) = camera_follow.entity {
             if let Ok((mut options, _, mut transform)) = can_have_camera_query.get_mut(following) {
-                options.yaw -= delta.x() * 3.0 * time.delta_seconds;
-                options.pitch += delta.y() * 3.0 * time.delta_seconds;
+                options.yaw -= delta.x * 3.0 * time.delta_seconds;
+                options.pitch += delta.y * 3.0 * time.delta_seconds;
 
                 if options.pitch > 89.9 {
                     options.pitch = 89.9;

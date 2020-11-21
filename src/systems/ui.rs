@@ -104,7 +104,7 @@ struct DisplayedButtons {
 }
 
 fn change_displayed_buttons(
-    mut commands: Commands,
+    commands: &mut Commands,
     assets: Res<UiAssetsResource>,
     mut available_buttons: ResMut<AvailableButtons>,
     mut displayed_buttons: ResMut<DisplayedButtons>,
@@ -121,7 +121,7 @@ fn change_displayed_buttons(
 
     commands
         // root node
-        .spawn(NodeComponents {
+        .spawn(NodeBundle {
             style: Style {
                 size: Size::new(Val::Percent(40.), Val::Percent(30.)),
                 position_type: PositionType::Absolute,
@@ -144,7 +144,7 @@ fn change_displayed_buttons(
             for (string, _id, callback, callback_data) in &available_buttons.buttons {
                 // Spawn a new button
                 parent
-                    .spawn(ButtonComponents {
+                    .spawn(ButtonBundle {
                         style: Style {
                             size: Size::new(Val::Px(150.0), Val::Px(150.0)),
                             justify_content: JustifyContent::Center,
@@ -163,13 +163,14 @@ fn change_displayed_buttons(
                     })
                     .with_children(|parent| {
                         parent
-                            .spawn(TextComponents {
+                            .spawn(TextBundle {
                                 text: Text {
                                     value: string.clone(),
                                     font: assets.font.clone(),
                                     style: TextStyle {
                                         font_size: 20.0,
                                         color: Color::rgb(0.8, 0.8, 0.8),
+                                        ..Default::default()
                                     },
                                 },
                                 ..Default::default()
@@ -183,17 +184,17 @@ fn change_displayed_buttons(
 }
 
 pub type AbilityChangeCallback =
-    fn(Commands, ResMut<CurrentAbility>, ResMut<AvailableButtons>, CallbackData);
+    fn(&mut Commands, ResMut<CurrentAbility>, ResMut<AvailableButtons>, CallbackData);
 
 struct AbilityButton {
     callback: AbilityChangeCallback,
     data: CallbackData,
 }
 fn button_system(
-    commands: Commands,
+    commands: &mut Commands,
     ability: ResMut<CurrentAbility>,
     available_buttons: ResMut<AvailableButtons>,
-    mut interaction_query: Query<(&mut AbilityButton, Mutated<Interaction>)>,
+    mut interaction_query: Query<(&mut AbilityButton, &Interaction), Mutated<Interaction>>,
     mut circle_query: Query<&mut SelectionCircle>,
 ) {
     for (ability_button, interaction) in interaction_query.iter_mut() {
@@ -231,10 +232,10 @@ fn block_picking_under_blockers(
 
 // Ability display UI
 struct AbilityText;
-fn init_ability_text(mut commands: Commands, assets: Res<UiAssetsResource>) {
+fn init_ability_text(commands: &mut Commands, assets: Res<UiAssetsResource>) {
     commands
         // root node
-        .spawn(NodeComponents {
+        .spawn(NodeBundle {
             style: Style {
                 position_type: PositionType::Absolute,
                 position: Rect {
@@ -249,13 +250,14 @@ fn init_ability_text(mut commands: Commands, assets: Res<UiAssetsResource>) {
         })
         .with_children(|parent| {
             parent
-                .spawn(TextComponents {
+                .spawn(TextBundle {
                     text: Text {
                         value: "Ability: None".to_string(),
                         font: assets.font.clone(),
                         style: TextStyle {
                             font_size: 40.0,
                             color: Color::rgb(0.8, 0.8, 0.8),
+                            ..Default::default()
                         },
                     },
                     ..Default::default()
@@ -276,10 +278,10 @@ impl Plugin for UIPlugin {
         app.init_resource::<UiAssetsResource>()
             .init_resource::<AvailableButtons>()
             .init_resource::<DisplayedButtons>()
-            .add_startup_system(init_ability_text.system())
-            .add_system(ability_text_update.system())
-            .add_system(block_picking_under_blockers.system())
-            .add_system(button_system.system())
-            .add_system(change_displayed_buttons.system());
+            .add_startup_system(init_ability_text)
+            .add_system(ability_text_update)
+            .add_system(block_picking_under_blockers)
+            .add_system(button_system)
+            .add_system(change_displayed_buttons);
     }
 }

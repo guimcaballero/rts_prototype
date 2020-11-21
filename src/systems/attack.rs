@@ -23,7 +23,7 @@ impl Ranged {
 }
 
 fn shoot_against_enemies(
-    mut commands: Commands,
+    commands: &mut Commands,
     time: Res<ControlledTime>,
     bullet_resource: Res<BulletMeshResource>,
     mut ranged_query: Query<(&Unit, &mut Ranged, &Transform, &Faction)>,
@@ -67,7 +67,7 @@ fn shoot_against_enemies(
             // If there is a closest enemy, we shoot
             if let Some((vector, _)) = enemy {
                 Bullet::spawn(
-                    &mut commands,
+                    commands,
                     &bullet_resource,
                     time.seconds_since_startup,
                     translation,
@@ -84,6 +84,6 @@ fn shoot_against_enemies(
 pub struct AttackPlugin;
 impl Plugin for AttackPlugin {
     fn build(&self, app: &mut AppBuilder) {
-        app.add_system(shoot_against_enemies.system());
+        app.add_system(shoot_against_enemies);
     }
 }

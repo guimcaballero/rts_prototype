@@ -22,13 +22,13 @@ impl Default for SelectionState {
 
 struct DragSelectionRectangle;
 fn create_drag_rectangle(
-    mut commands: Commands,
+    commands: &mut Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut color_materials: ResMut<Assets<ColorMaterial>>,
 ) {
     // Drag Selection rectangle
     commands
-        .spawn(SpriteComponents {
+        .spawn(SpriteBundle {
             material: color_materials.add(Color::rgba(0.0, 0.0, 0.8, 0.1).into()),
             mesh: meshes.add(rectangle_mesh()),
             sprite: Sprite {
@@ -150,13 +150,13 @@ fn select_inside_rectangle(
                 // Mark the units as selected if they are inside the rectangle
                 selectable.set_selected(
                     is_between_two_values(
-                        transform.translation.x(),
-                        initial_position.x(),
-                        current_position.x(),
+                        transform.translation.x,
+                        initial_position.x,
+                        current_position.x,
                     ) && is_between_two_values(
-                        transform.translation.z(),
-                        initial_position.z(),
-                        current_position.z(),
+                        transform.translation.z,
+                        initial_position.z,
+                        current_position.z,
                     ),
                 );
             }
@@ -176,8 +176,8 @@ fn heal_area_ability(
     if let Some((beginning, end)) = selection_state.last_rectangle {
         for (mut health, _unit, transform) in query.iter_mut() {
             // Heal the units inside the rectangle
-            if is_between_two_values(transform.translation.x(), beginning.x(), end.x())
-                && is_between_two_values(transform.translation.z(), beginning.z(), end.z())
+            if is_between_two_values(transform.translation.x, beginning.x, end.x)
+                && is_between_two_values(transform.translation.z, beginning.z, end.z)
             {
                 health.heal(3);
             }
@@ -192,11 +192,11 @@ pub struct DragSelectionPlugin;
 impl Plugin for DragSelectionPlugin {
     fn build(&self, app: &mut AppBuilder) {
         app.init_resource::<SelectionState>()
-            .add_system(start_drag_select.system())
-            .add_system(finish_drag_select.system())
-            .add_system(drag_select.system())
-            .add_system(select_inside_rectangle.system())
-            .add_startup_system(create_drag_rectangle.system())
-            .add_system(heal_area_ability.system());
+            .add_system(start_drag_select)
+            .add_system(finish_drag_select)
+            .add_system(drag_select)
+            .add_system(select_inside_rectangle)
+            .add_startup_system(create_drag_rectangle)
+            .add_system(heal_area_ability);
     }
 }

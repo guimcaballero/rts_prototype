@@ -111,8 +111,8 @@ fn walker_mouse_rotation_system(
     for (_, mut camera_follow) in camera_query.iter_mut() {
         if let Some(following) = camera_follow.entity {
             if let Ok((mut options, _, mut transform)) = can_have_camera_query.get_mut(following) {
-                options.yaw -= delta.x() * options.sensitivity * time.delta_seconds;
-                options.pitch += delta.y() * options.sensitivity * time.delta_seconds;
+                options.yaw -= delta.x * options.sensitivity * time.delta_seconds;
+                options.pitch += delta.y * options.sensitivity * time.delta_seconds;
 
                 if options.pitch > 89.9 {
                     options.pitch = 89.9;

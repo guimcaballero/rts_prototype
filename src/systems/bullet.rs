@@ -20,7 +20,7 @@ impl Bullet {
         faction: Factions,
     ) {
         commands
-            .spawn(PbrComponents {
+            .spawn(PbrBundle {
                 mesh: resource.mesh.clone(),
                 material: resource.material.clone(),
                 transform: Transform::from_translation(origin),
@@ -41,7 +41,7 @@ fn move_bullet(time: Res<ControlledTime>, mut query: Query<(&Bullet, &mut Transf
 }
 
 fn kill_after_lifetime_over(
-    mut commands: Commands,
+    commands: &mut Commands,
     time: Res<ControlledTime>,
     query: Query<(&Bullet, Entity)>,
 ) {
@@ -53,7 +53,7 @@ fn kill_after_lifetime_over(
 }
 
 fn bullet_collision(
-    mut commands: Commands,
+    commands: &mut Commands,
     bullet_query: Query<(&Bullet, &Transform, &Faction, Entity)>,
     mut unit_query: Query<(&Unit, &Transform, &mut Health, &Faction)>,
 ) {
@@ -101,8 +101,8 @@ pub struct BulletPlugin;
 impl Plugin for BulletPlugin {
     fn build(&self, app: &mut AppBuilder) {
         app.init_resource::<BulletMeshResource>()
-            .add_system(move_bullet.system())
-            .add_system(kill_after_lifetime_over.system())
-            .add_system(bullet_collision.system());
+            .add_system(move_bullet)
+            .add_system(kill_after_lifetime_over)
+            .add_system(bullet_collision);
     }
 }

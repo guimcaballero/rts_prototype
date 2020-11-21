@@ -36,7 +36,7 @@ pub struct AbilityButton {
 
 fn add_ability_buttons_for_selected_units(
     mut buttons: ResMut<AvailableButtons>,
-    query: Query<(Mutated<Selectable>, &UnitAbilities, Entity)>,
+    query: Query<(&Selectable, &UnitAbilities, Entity), Mutated<Selectable>>,
 ) {
     for (selectable, abilities, entity) in &mut query.iter() {
         if selectable.selected && !selectable.previously_selected {
@@ -70,7 +70,7 @@ fn teleport_ability(
             // Get the world position
             if let Some((_top_entity, intersection)) = pick_state.top(Group::default()) {
                 let mut pos = *intersection.position();
-                pos.set_y(1.);
+                pos.y = 1.;
 
                 if let Ok(mut transform) = query.get_component_mut::<Transform>(entity) {
                     transform.translation = pos;

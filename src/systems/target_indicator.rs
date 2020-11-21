@@ -19,7 +19,7 @@ fn show_target_indicator(
             selections_with_target_exist = true;
 
             for (_, mut transform, _) in indicator_query.iter_mut() {
-                transform.translation = Vec3::new(target_position.x(), 0.3, target_position.z());
+                transform.translation = Vec3::new(target_position.x, 0.3, target_position.z);
             }
         }
     }
@@ -31,12 +31,12 @@ fn show_target_indicator(
 }
 
 pub fn create_target_indicator(
-    mut commands: Commands,
+    commands: &mut Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut color_materials: ResMut<Assets<ColorMaterial>>,
 ) {
     commands
-        .spawn(SpriteComponents {
+        .spawn(SpriteBundle {
             material: color_materials.add(Color::rgb(0.0, 0.0, 0.8).into()),
             mesh: meshes.add(circle_mesh()),
             sprite: Sprite {
@@ -56,7 +56,7 @@ pub fn create_target_indicator(
 pub struct TargetIndicatorPlugin;
 impl Plugin for TargetIndicatorPlugin {
     fn build(&self, app: &mut AppBuilder) {
-        app.add_startup_system(create_target_indicator.system())
-            .add_system(show_target_indicator.system());
+        app.add_startup_system(create_target_indicator)
+            .add_system(show_target_indicator);
     }
 }

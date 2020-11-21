@@ -25,13 +25,13 @@ fn update_debug_cursor_position(
 }
 /// Start up system to create 3d Debug cursor
 fn setup_debug_cursor(
-    mut commands: Commands,
+    commands: &mut Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
     commands
         // cursor
-        .spawn(PbrComponents {
+        .spawn(PbrBundle {
             mesh: meshes.add(Mesh::from(shape::Icosphere {
                 subdivisions: 4,
                 radius: 0.1,
@@ -50,8 +50,8 @@ fn ability_debug(ability: ChangedRes<CurrentAbility>) {
 pub struct DebugPlugin;
 impl Plugin for DebugPlugin {
     fn build(&self, app: &mut AppBuilder) {
-        app.add_startup_system(setup_debug_cursor.system())
-            .add_system(update_debug_cursor_position.system())
-            .add_system(ability_debug.system());
+        app.add_startup_system(setup_debug_cursor)
+            .add_system(update_debug_cursor_position)
+            .add_system(ability_debug);
     }
 }

@@ -42,7 +42,7 @@ impl Health {
     }
 }
 
-fn kill_if_health_0(mut commands: Commands, query: Query<(Mutated<Health>, Entity)>) {
+fn kill_if_health_0(commands: &mut Commands, query: Query<(&Health, Entity), Mutated<Health>>) {
     for (health, entity) in &mut query.iter() {
         if health.value <= 0 {
             commands.insert_one(entity, Dead {});
@@ -52,7 +52,7 @@ fn kill_if_health_0(mut commands: Commands, query: Query<(Mutated<Health>, Entit
 
 pub struct Dead;
 fn remove_if_dead(
-    mut commands: Commands,
+    commands: &mut Commands,
     mut buttons: ResMut<AvailableButtons>,
     query: Query<(&Dead, Entity, Option<&Selectable>, Option<&UnitAbilities>)>,
 ) {
@@ -75,7 +75,6 @@ fn remove_if_dead(
 pub struct HealthPlugin;
 impl Plugin for HealthPlugin {
     fn build(&self, app: &mut AppBuilder) {
-        app.add_system(kill_if_health_0.system())
-            .add_system(remove_if_dead.system());
+        app.add_system(kill_if_health_0).add_system(remove_if_dead);
     }
 }

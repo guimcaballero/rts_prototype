@@ -23,13 +23,13 @@ impl Selectable {
 #[derive(Default)]
 pub struct SelectableBuilder;
 fn selectable_builder(
-    mut commands: Commands,
+    commands: &mut Commands,
     resource: Res<SelectionCircleMaterial>,
     query: Query<(Entity, &SelectableBuilder, &UnitSize)>,
 ) {
     for (entity, _, size) in &mut query.iter() {
         let circle = commands
-            .spawn(SpriteComponents {
+            .spawn(SpriteBundle {
                 material: resource.circle_material.clone(),
                 mesh: resource.circle_mesh.clone(),
                 sprite: Sprite {
@@ -123,8 +123,8 @@ fn set_target_for_selected(
 pub struct SelectionPlugin;
 impl Plugin for SelectionPlugin {
     fn build(&self, app: &mut AppBuilder) {
-        app.add_system(selectable_builder.system())
-            .add_system(select_units.system())
-            .add_system(set_target_for_selected.system());
+        app.add_system(selectable_builder)
+            .add_system(select_units)
+            .add_system(set_target_for_selected);
     }
 }

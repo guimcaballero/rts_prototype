@@ -9,10 +9,10 @@ pub fn rectangle_mesh() -> Mesh {
 }
 
 pub fn set_rectangle_attributes(mesh: &mut Mesh, a: Vec3, b: Vec3) {
-    let max_x = f32::max(a.x(), b.x());
-    let min_x = f32::min(a.x(), b.x());
-    let max_z = f32::max(a.z(), b.z());
-    let min_z = f32::min(a.z(), b.z());
+    let max_x = f32::max(a.x, b.x);
+    let min_x = f32::min(a.x, b.x);
+    let max_z = f32::max(a.z, b.z);
+    let min_z = f32::min(a.z, b.z);
 
     let mut normals: Vec<[f32; 3]> = Vec::new();
     let mut uvs: Vec<[f32; 2]> = Vec::new();
@@ -28,11 +28,10 @@ pub fn set_rectangle_attributes(mesh: &mut Mesh, a: Vec3, b: Vec3) {
             [min_x, 0.0, max_z],
             [max_x, 0.0, max_z],
             [max_x, 0.0, min_z],
-        ])
-        .into(),
+        ]),
     );
-    mesh.set_attribute(Mesh::ATTRIBUTE_NORMAL, normals.into());
-    mesh.set_attribute(Mesh::ATTRIBUTE_UV_0, uvs.into());
+    mesh.set_attribute(Mesh::ATTRIBUTE_NORMAL, normals);
+    mesh.set_attribute(Mesh::ATTRIBUTE_UV_0, uvs);
 }
 
 pub fn circle_mesh() -> Mesh {
@@ -91,9 +90,8 @@ pub fn set_circle_attributes(mesh: &mut Mesh) {
             [-55.432777, 0.0, 22.960997],
             [-49.88818, 0.0, 33.33421],
             [-58.84712, 0.0, 11.705405],
-        ])
-        .into(),
+        ]),
     );
-    mesh.set_attribute(Mesh::ATTRIBUTE_NORMAL, normals.into());
-    mesh.set_attribute(Mesh::ATTRIBUTE_UV_0, uvs.into());
+    mesh.set_attribute(Mesh::ATTRIBUTE_NORMAL, normals);
+    mesh.set_attribute(Mesh::ATTRIBUTE_UV_0, uvs);
 }

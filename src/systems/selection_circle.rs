@@ -24,7 +24,7 @@ fn move_circle_for_selected_units(
         if let Ok((circle, mut circle_transform)) = circle_query.get_mut(selectable.circle) {
             if circle.visible() {
                 let translation = transform.translation;
-                circle_transform.translation = Vec3::new(translation.x(), 0.1, translation.z());
+                circle_transform.translation = Vec3::new(translation.x, 0.1, translation.z);
             }
         }
     }
@@ -52,7 +52,7 @@ fn set_unit_hovered_for_circles(
 }
 
 fn set_unit_selected_for_circles(
-    query: Query<Changed<Selectable>>,
+    query: Query<&Selectable, Changed<Selectable>>,
     mut circle_query: Query<&mut SelectionCircle>,
 ) {
     for selectable in query.iter() {

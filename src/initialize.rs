@@ -12,25 +12,25 @@ use bevy_contrib_colors::Tailwind;
 use bevy_mod_picking::*;
 
 pub fn setup(
-    mut commands: Commands,
+    commands: &mut Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
     // add entities to the world
     commands
         // plane
-        .spawn(PbrComponents {
+        .spawn(PbrBundle {
             mesh: meshes.add(Mesh::from(shape::Plane { size: 400.0 })),
             material: materials.add(Tailwind::RED100.into()),
             ..Default::default()
         })
         .with(PickableMesh::default())
         // light
-        .spawn(LightComponents {
+        .spawn(LightBundle {
             transform: Transform::from_translation(Vec3::new(4.0, 8.0, 4.0)),
             ..Default::default()
         })
-        .spawn(UiCameraComponents::default());
+        .spawn(UiCameraBundle::default());
 
     let walker_mesh = meshes.add(Mesh::from(shape::Cube { size: 1.0 }));
     let big_walker_mesh = meshes.add(Mesh::from(shape::Cube { size: 5.0 }));
@@ -38,7 +38,7 @@ pub fn setup(
     for i in 0..5 {
         for j in 0..5 {
             create_walker(
-                &mut commands,
+                commands,
                 walker_mesh.clone(),
                 material.clone(),
                 Vec3::new(i as f32 * 5.0 - 10.0, 1.0, j as f32 * 5.0 - 10.0),
@@ -47,7 +47,7 @@ pub fn setup(
     }
 
     create_tp_healer(
-        &mut commands,
+        commands,
         big_walker_mesh,
         materials.add(Tailwind::RED700.into()),
         Vec3::new(20.0, 0.0, 20.0),
@@ -58,20 +58,15 @@ pub fn setup(
         radius: 1.0,
     }));
     create_drone(
-        &mut commands,
+        commands,
         drone_mesh.clone(),
         material.clone(),
         Vec3::new(10.0, 20.0, 5.0),
     );
-    let camera_holder = create_drone(
-        &mut commands,
-        drone_mesh,
-        material,
-        Vec3::new(-25.0, 60.0, 0.0),
-    );
+    let camera_holder = create_drone(commands, drone_mesh, material, Vec3::new(-25.0, 60.0, 0.0));
 
     commands
-        .spawn(Camera3dComponents {
+        .spawn(Camera3dBundle {
             ..Default::default()
         })
         .with(PickSource::default())
@@ -88,10 +83,10 @@ fn create_walker(
     position: Vec3,
 ) -> Entity {
     commands
-        .spawn(PbrComponents {
+        .spawn(PbrBundle {
             mesh,
             material,
-            transform: Transform::from_translation(Vec3::new(position.x(), 1.0, position.z())),
+            transform: Transform::from_translation(Vec3::new(position.x, 1.0, position.z)),
             ..Default::default()
         })
         .with(SelectableBuilder::default())
@@ -110,10 +105,10 @@ fn create_tp_healer(
     position: Vec3,
 ) -> Entity {
     commands
-        .spawn(PbrComponents {
+        .spawn(PbrBundle {
             mesh,
             material,
-            transform: Transform::from_translation(Vec3::new(position.x(), 5.0, position.z())),
+            transform: Transform::from_translation(Vec3::new(position.x, 5.0, position.z)),
             ..Default::default()
         })
         .with(SelectableBuilder::default())
@@ -164,7 +159,7 @@ fn create_drone(
     position: Vec3,
 ) -> Entity {
     commands
-        .spawn(PbrComponents {
+        .spawn(PbrBundle {
             mesh,
             material,
             transform: Transform::from_matrix(Mat4::from_rotation_translation(

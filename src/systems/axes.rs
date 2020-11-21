@@ -72,9 +72,9 @@ impl From<Cone> for Mesh {
 
         let mut mesh = Mesh::new(bevy::render::pipeline::PrimitiveTopology::TriangleList);
         mesh.set_indices(Some(Indices::U32(indices)));
-        mesh.set_attribute(Mesh::ATTRIBUTE_POSITION, positions.into());
-        mesh.set_attribute(Mesh::ATTRIBUTE_NORMAL, normals.into());
-        mesh.set_attribute(Mesh::ATTRIBUTE_UV_0, uvs.into());
+        mesh.set_attribute(Mesh::ATTRIBUTE_POSITION, positions);
+        mesh.set_attribute(Mesh::ATTRIBUTE_NORMAL, normals);
+        mesh.set_attribute(Mesh::ATTRIBUTE_UV_0, uvs);
         mesh
     }
 }
@@ -169,9 +169,9 @@ impl From<Cylinder> for Mesh {
 
         let mut mesh = Mesh::new(bevy::render::pipeline::PrimitiveTopology::TriangleList);
         mesh.set_indices(Some(Indices::U32(indices)));
-        mesh.set_attribute(Mesh::ATTRIBUTE_POSITION, positions.into());
-        mesh.set_attribute(Mesh::ATTRIBUTE_NORMAL, normals.into());
-        mesh.set_attribute(Mesh::ATTRIBUTE_UV_0, uvs.into());
+        mesh.set_attribute(Mesh::ATTRIBUTE_POSITION, positions);
+        mesh.set_attribute(Mesh::ATTRIBUTE_NORMAL, normals);
+        mesh.set_attribute(Mesh::ATTRIBUTE_UV_0, uvs);
         mesh
     }
 }
@@ -180,8 +180,7 @@ impl From<Cylinder> for Mesh {
 pub struct AxesPlugin;
 impl Plugin for AxesPlugin {
     fn build(&self, app: &mut AppBuilder) {
-        app.add_startup_system(axes_setup.system())
-            .add_system(axes_system.system());
+        app.add_startup_system(axes_setup).add_system(axes_system);
     }
 }
 
@@ -199,13 +198,13 @@ fn axes_system(
     let projection_matrix = camera.projection_matrix;
     let world_pos: Vec4 =
         (view_matrix * projection_matrix.inverse()).mul_vec4(Vec4::new(0.7, -0.8, 0.3, 1.0));
-    let position: Vec3 = (world_pos / world_pos.w()).truncate().into();
+    let position: Vec3 = (world_pos / world_pos.w).truncate().into();
 
     axes_transform.translation = position;
 }
 
 fn axes_setup(
-    mut commands: Commands,
+    commands: &mut Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut standard_materials: ResMut<Assets<StandardMaterial>>,
 ) {
@@ -238,7 +237,7 @@ fn axes_setup(
                 ))
                 .with_children(|axis_root| {
                     axis_root
-                        .spawn(PbrComponents {
+                        .spawn(PbrBundle {
                             material: red.clone(),
                             mesh: cone_mesh.clone(),
                             transform: Transform::from_translation(Vec3::new(
@@ -246,7 +245,7 @@ fn axes_setup(
                             )),
                             ..Default::default()
                         })
-                        .spawn(PbrComponents {
+                        .spawn(PbrBundle {
                             material: red,
                             mesh: cylinder_mesh.clone(),
                             ..Default::default()
@@ -255,7 +254,7 @@ fn axes_setup(
                 .spawn((GlobalTransform::identity(), Transform::identity()))
                 .with_children(|axis_root| {
                     axis_root
-                        .spawn(PbrComponents {
+                        .spawn(PbrBundle {
                             material: green.clone(),
                             mesh: cone_mesh.clone(),
                             transform: Transform::from_translation(Vec3::new(
@@ -263,7 +262,7 @@ fn axes_setup(
                             )),
                             ..Default::default()
                         })
-                        .spawn(PbrComponents {
+                        .spawn(PbrBundle {
                             material: green,
                             mesh: cylinder_mesh.clone(),
                             ..Default::default()
@@ -275,7 +274,7 @@ fn axes_setup(
                 ))
                 .with_children(|axis_root| {
                     axis_root
-                        .spawn(PbrComponents {
+                        .spawn(PbrBundle {
                             material: blue.clone(),
                             mesh: cone_mesh,
                             transform: Transform::from_translation(Vec3::new(
@@ -283,7 +282,7 @@ fn axes_setup(
                             )),
                             ..Default::default()
                         })
-                        .spawn(PbrComponents {
+                        .spawn(PbrBundle {
                             material: blue,
                             mesh: cylinder_mesh,
                             ..Default::default()

@@ -21,13 +21,7 @@ pub struct TargetPosition {
 
 impl TargetPosition {
     pub fn update_to_vec(&mut self, vec: &Vec3) {
-        if let Some(pos) = self.pos.as_mut() {
-            pos.set_x(vec.x());
-            pos.set_y(vec.y());
-            pos.set_z(vec.z());
-        } else {
-            self.pos = Some(*vec);
-        }
+        self.pos = Some(*vec);
     }
 }
 
@@ -72,13 +66,13 @@ fn unit_movement(
         }
 
         // Setting vertical displacement to 0 so that big units don't move up
-        separation.set_y(0.0);
+        separation.y = 0.;
         velocity += separation;
 
         // Move towards target
         if let Some(target_pos) = target.pos {
             let mut direction = target_pos - transform.translation;
-            direction.set_y(0.0);
+            direction.y = 0.;
 
             if direction.length() > 0.3 + units_nearby as f32 {
                 let direction = direction.normalize() * unit.speed * time.delta_seconds;
@@ -90,8 +84,8 @@ fn unit_movement(
         }
 
         // If unit is on the floor, we don't allow going down
-        if translation.y() <= 1.01 && velocity.y() < 0. {
-            velocity.set_y(0.);
+        if translation.y <= 1.01 && velocity.y < 0. {
+            velocity.y = 0.;
         }
 
         if time.delta_seconds > 0. {

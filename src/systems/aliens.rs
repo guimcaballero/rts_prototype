@@ -7,7 +7,7 @@ use bevy_contrib_colors::Tailwind;
 
 struct SpawnTimer(Timer);
 fn create_random_aliens(
-    mut commands: Commands,
+    commands: &mut Commands,
     time: Res<ControlledTime>,
     mut timer: ResMut<SpawnTimer>,
     resource: Res<AlienMeshResource>,
@@ -21,7 +21,7 @@ fn create_random_aliens(
             50. * time.seconds_since_startup.to_degrees().cos() as f32,
         );
         commands
-            .spawn(PbrComponents {
+            .spawn(PbrBundle {
                 mesh: resource.mesh.clone(),
                 material: resource.material.clone(),
                 transform: Transform::from_translation(position),
@@ -59,6 +59,6 @@ impl Plugin for AliensPlugin {
     fn build(&self, app: &mut AppBuilder) {
         app.init_resource::<AlienMeshResource>()
             .add_resource(SpawnTimer(Timer::from_seconds(3.0, true)))
-            .add_system(create_random_aliens.system());
+            .add_system(create_random_aliens);
     }
 }

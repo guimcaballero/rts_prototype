@@ -6,7 +6,7 @@ pub fn forward_vector(rotation: &Quat) -> Vec3 {
 
 pub fn forward_walk_vector(rotation: &Quat) -> Vec3 {
     let f = forward_vector(rotation);
-    Vec3::new(f.x(), 0.0, f.z()).normalize()
+    Vec3::new(f.x, 0.0, f.z).normalize()
 }
 
 pub fn strafe_vector(rotation: &Quat) -> Vec3 {
